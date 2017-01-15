@@ -5,7 +5,6 @@
 ************************************************************/
 
 #include "Tcp.h"
-#include "Connection.h"
 
 /***********************************************************************
 * function name: Tcp												   *
@@ -14,7 +13,7 @@
 * The Function operation: creating new Tcp. initialize if server and   *
 * port_num by the input												   *
 ***********************************************************************/
-Tcp::Tcp(bool isServers, int port_num, string ip) : connection(0){
+Tcp::Tcp(bool isServers, int port_num, string ip) {
 	this->descriptorCommunicateClient = 0;
 	this->port_number = port_num;
 	this->isServer = isServers;
@@ -74,8 +73,6 @@ int Tcp::initialize( ) {
 			//return an error represent error at this method
 			return ERROR_ACCEPT;
 		}
-        this->connection = Connection(this->socketDescriptor);
-       // connection.makeConnect();
 	//if client
 	} else {
 		struct sockaddr_in sin;
@@ -84,7 +81,6 @@ int Tcp::initialize( ) {
 		sin.sin_addr.s_addr = inet_addr((this->ip_address).c_str());
 		sin.sin_port = htons(this->port_number);
 		cout << "waiting to connect" << endl;
-
 		if (connect(this->socketDescriptor,
 				(struct sockaddr *) &sin, sizeof(sin)) < 0) {
 			//return an error represent error at this method
@@ -142,8 +138,7 @@ int Tcp::reciveData(char* buffer, int size, int descriptorCommunicateClient) {
 	return read_bytes;
 }
 
-Connection Tcp::getConnection() {
-	return this->connection;
+int Tcp::getSocketDescriptor() {
+    return this->socketDescriptor;
 }
-
 

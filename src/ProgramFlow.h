@@ -41,7 +41,7 @@ public:
      * 9 - advance the time and do the required operations (assigning trips to the drivers
      *     when the starting time of these trips is arriving, advancing of the relevant drivers)
     */
-    static void * run(void * socket);
+    static void run(Socket *socket);
 
     /*
      * create taxi center. the taxi center has to contain "bfs" (that know the grid and the
@@ -52,10 +52,13 @@ public:
     //create rectangular matrix with list of impassable points
     static Graph<Point> *createGrid(int width, int height, vector<Point> listOfObstacles);
     static void* threadsRun(void *r);
-    struct threadsStruct{
-        void* socket;
+    struct threadData{
+        Socket *socket;
         int socketDescriptor;
+        TaxiCenter *taxiCenter;
     };
+
+    static int acceptConnection(Socket *socket);
 };
 
 #endif //EX1_VERSION_1_1_PROGRAMFLOW_H

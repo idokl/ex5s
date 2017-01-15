@@ -14,7 +14,6 @@
 #include <cstring>
 #include <iostream>
 #include <string>
-#include "Connection.h"
 
 using namespace std;
 
@@ -43,7 +42,6 @@ protected:
 	int backLog;
 	//port number
 	int port_number;
-    Connection connection;
 public:
 	/***********************************************************************
 	* function name: Socket												   *
@@ -84,7 +82,7 @@ public:
 	***********************************************************************/
 	virtual int reciveData(char* buffer, int size, int descriptorCommunicateClient) = 0;
 
-    virtual Connection getConnection() = 0;
+	virtual int getSocketDescriptor() = 0;
 
 
 

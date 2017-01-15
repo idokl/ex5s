@@ -19,12 +19,13 @@ Graph<Point> *ProgramFlow::createGrid(int width, int height, vector<Point> listO
 }
 
 
-void *ProgramFlow::threadsRun(void* threadsStructVoid){
+void *ProgramFlow::threadsRun(void* threadStruct){
     int runOnce =0;
     string inputString;
-    threadsStruct *threadsStructInput = (struct threadsStruct*)threadsStructVoid;
-    int socketDescriptor = threadsStructInput->socketDescriptor;
-    Socket *socket = (Socket*) threadsStructInput->socket;
+    threadData *threadData = (struct threadData*)threadStruct;
+    int socketDescriptor = threadData->socketDescriptor;
+    Socket *socket = threadData->socket;
+    TaxiCenter *taxiCenter = threadData->taxiCenter;
     char buffer[1024];
     while(true) {
         if(runOnce==0) {
@@ -34,8 +35,8 @@ void *ProgramFlow::threadsRun(void* threadsStructVoid){
                     string driverIdString = string(buffer);
                     int driverId = stoi(driverIdString);
                     //send taxi data
-                    //string dataOfCabOfDriver = taxiCenter.getCabString(driverId);
-                    //socket->sendData(dataOfCabOfDriver, socketDescriptor);
+                    string dataOfCabOfDriver = taxiCenter->getCabString(driverId);
+                    socket->sendData(dataOfCabOfDriver, socketDescriptor);
                 }
                 case 4: {
                     getline(cin, inputString);
@@ -72,9 +73,8 @@ void *ProgramFlow::threadsRun(void* threadsStructVoid){
 
 
 
-void * ProgramFlow::run(void * mainSocket) {
-    Socket* socket = (Socket*) mainSocket;
-            string inputString;
+void ProgramFlow::run(Socket *mainSocket) {
+    string inputString;
     //get the grid dimensions
     getline(cin, inputString);
     InputParsing inputParsing = InputParsing();
@@ -99,6 +99,8 @@ void * ProgramFlow::run(void * mainSocket) {
     Cab *cabForDriver = NULL;
     int expectedNumberOfDrivers = 0;
     int timer = 0;
+    struct threadData threadDataStruct;
+    threadData * threadData = &threadDataStruct;
     while (true) {
         //get number of option and do the defined operation
         getline(cin, inputString);
@@ -112,12 +114,16 @@ void * ProgramFlow::run(void * mainSocket) {
                     break;
                 }else{
                     char buffer[1024];
-                    Connection connection = socket->getConnection();
                     for(unsigned int i=0; i<expectedNumberOfDrivers; i++){
-                        connection.makeConnect(mainSocket);
+                        int descriptor = ProgramFlow::acceptConnection(mainSocket);
                         globalX =1;
+                        
+                        threadData->socket = mainSocket;
+                        threadData->socketDescriptor = descriptor;
+                        threadData->taxiCenter = &taxiCenter;
+                        pthread_t pthread;
+                        pthread_create(&pthread, NULL, ProgramFlow::threadsRun, (void*)&threadData);
                    }
-
                 }
                 break;
             }
@@ -165,7 +171,7 @@ void * ProgramFlow::run(void * mainSocket) {
                // socket->sendData("7");
                 //deallocate memory and terminate the program
                 delete grid;
-                return 0;
+                exit(0);
             }
             case 9: {
                 timer++;
@@ -197,4 +203,14 @@ void * ProgramFlow::run(void * mainSocket) {
                 break;
         }
     }
+}
+
+int ProgramFlow::acceptConnection(Socket *socket) {
+        struct sockaddr_in client_sin;
+        unsigned int addr_len;
+        addr_len = sizeof(client_sin);
+        cout << "accept" << endl;
+        int descriptor = accept(socket->getSocketDescriptor(),
+                                (struct sockaddr *) &client_sin, &addr_len);
+        return descriptor;
 }

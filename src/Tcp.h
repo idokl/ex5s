@@ -7,12 +7,10 @@
 #define TCP_H_
 
 #include "Socket.h"
-#include "Connection.h"
 
 class Tcp: public Socket {
 private:
 	int descriptorCommunicateClient;
-	Connection connection;
 public:
 	/***********************************************************************
 	* function name: Tcp												   *
@@ -53,7 +51,7 @@ public:
 	***********************************************************************/
 	int reciveData(char* buffer, int size, int descriptorCommunicateClient);
 
-	Connection getConnection();
+	int getSocketDescriptor();
 };
 
 #endif /* TCP_H_ */
