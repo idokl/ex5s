@@ -53,34 +53,35 @@ stack<Node<T>> BfsAlgorithm<T>::navigate(Node<T> &start, Node<T> &end) {
     queue<Node<T>> nodesToLookForNeighbors = queue<Node<T>>();
     //set of nodes that have already been visited in this search
     //(we have already know the shortest path from the start Node to them)
-    set<Node<T>> visitedNodes = set<Node<T>>();
+//    set<Node<T>> visitedNodes = set<Node<T>>();
     //map that match to every visitedNode its parent in the tree that the BFS build
     map<Node<T>, Node<T>> parentOfNode = map<Node<T>, Node<T>>();
     //map that match to every visitedNode its distance from the start Node
-    map<Node<T>, int> distanceOfNode = map<Node<T>, int>();
+//    map<Node<T>, int> distanceOfNode = map<Node<T>, int>();
     //(we could implement the function without the "visitedNodes" set and the "distanceOfNode"
     //map, but it might be useful in the future)
 
     //enter the start Node to the queue and start to build the search tree by it
-    distanceOfNode.insert(pair<Node<T>, int>(start, 0));
+//    distanceOfNode.insert(pair<Node<T>, int>(start, 0));
     nodesToLookForNeighbors.push(start);
 
     while (!nodesToLookForNeighbors.empty()) {
         //take out a Node from the queue and check its distance and its neighbors
         Node<T> current = nodesToLookForNeighbors.front();
         nodesToLookForNeighbors.pop();
-        int currentDistance = distanceOfNode.at(current);
+//        int currentDistance = distanceOfNode.at(current);
         queue<Node<T>> currentNeighbors = graph->getNeighbors(current);
         //for each neighbor: check whether it has been visited.
         //if not, add it to our queue.
         while (!currentNeighbors.empty()) {
             Node<T> neighbor = currentNeighbors.front();
             currentNeighbors.pop();
-            bool theNeighborHasBeenVisited = (visitedNodes.find(neighbor) != visitedNodes.end());
+//            bool theNeighborHasBeenVisited = (visitedNodes.find(neighbor) != visitedNodes.end());
+            bool theNeighborHasBeenVisited = (parentOfNode.find(neighbor) != parentOfNode.end());
             if (!theNeighborHasBeenVisited) {
-                visitedNodes.insert(neighbor);
+//                visitedNodes.insert(neighbor);
                 parentOfNode.insert(pair<Node<T>, Node<T>>(neighbor, current));
-                distanceOfNode.insert(pair<Node<T>, int>(neighbor, currentDistance + 1));
+//                distanceOfNode.insert(pair<Node<T>, int>(neighbor, currentDistance + 1));
                 nodesToLookForNeighbors.push(neighbor);
             }
             //if we found the end Node, enter it to the stack with all its ancestors,
