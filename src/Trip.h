@@ -5,7 +5,6 @@
 #include <stack>
 #include "Point.h"
 #include "Passenger.h"
-
 #include <boost/serialization/list.hpp>
 
 class Trip {

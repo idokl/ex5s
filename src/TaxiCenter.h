@@ -7,6 +7,8 @@
 #include "BfsAlgorithm.h"
 #include "InputParsing.h"
 #include <pthread.h>
+#include "SerializationClass.h"
+
 
 /*
  * This class is responsible for communication with all the drivers, cabs and trips.
