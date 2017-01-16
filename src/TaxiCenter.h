@@ -7,7 +7,7 @@
 #include "BfsAlgorithm.h"
 #include "InputParsing.h"
 #include <pthread.h>
-#include "SerializationClass.h"
+
 
 
 /*

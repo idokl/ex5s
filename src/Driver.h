@@ -2,14 +2,14 @@
 #define EX1_VERSION_1_1_DRIVER_H
 
 #include <vector>
-#include "Cab.h"
+
 #include "Trip.h"
 #include "Socket.h"
 #include "SerializationClass.h"
 #include "CabFactory.h"
 
 
-typedef enum {SINGLE, MARRIED, DIVORCED, WIDOWED} Status_Of_Marriage;
+//typedef enum {SINGLE, MARRIED, DIVORCED, WIDOWED} Status_Of_Marriage;
 
 class Driver {
 private:

@@ -2,15 +2,19 @@
 #define EX1_VERSION_1_1_INPUTPARSING_H
 
 #include <iostream>
-#include <list>
+#include <vector>
 #include <map>
-#include "Grid.h"
-#include "Driver.h"
+#include "Point.h"
+#include "Cab.h"
 
+class Driver;
 using namespace std;
+
+typedef enum {SINGLE, MARRIED, DIVORCED, WIDOWED} Status_Of_Marriage;
 
 class InputParsing {
 private:
+    Driver *driver;
     map<string, Status_Of_Marriage> mapOfLetterToStatus;
     map<int, Taxi_Type> mapOfNumberToTaxiType;
     map<string, Model_Of_Car> mapOfLetterToModel;
