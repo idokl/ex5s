@@ -21,6 +21,8 @@
  * the wanted operations and to perform them.
  *
  */
+
+
 class ProgramFlow {
 public:
     /*
@@ -58,6 +60,7 @@ public:
         Socket *socket;
         int socketDescriptor;
         TaxiCenter *taxiCenter;
+        int id;
     };
 
     static int acceptConnection(Socket *socket);

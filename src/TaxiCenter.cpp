@@ -1,7 +1,7 @@
 #include "TaxiCenter.h"
 
 
-TaxiCenter::TaxiCenter(BfsAlgorithm<Point> &bfsInstance) : bfsInstance(bfsInstance) {}
+TaxiCenter::TaxiCenter(BfsAlgorithm<Point> &bfsInstance) : bfsInstance(bfsInstance), timer(0) {}
 
 void TaxiCenter::createTrip(InputParsing::parsedTripData parsedTripDataTrip) {
     Node<Point> startNode(parsedTripDataTrip.start);
@@ -11,15 +11,17 @@ void TaxiCenter::createTrip(InputParsing::parsedTripData parsedTripDataTrip) {
                           parsedTripDataTrip.numberOfPassengers, parsedTripDataTrip.tariff, nextPointsOfPath, parsedTripDataTrip.time);
     listOfTrips.push_back(trip);
 }
-
+/*
 const vector<Driver> &TaxiCenter::getListOfDrivers() const {
     return listOfDrivers;
 }
-
+*/
 const vector<Trip *> &TaxiCenter::getListOfTrips() const {
     return listOfTrips;
 }
 
+
+/*
 Point TaxiCenter::getDriverLocation(int driverId) {
     for (unsigned int i = 0; i < listOfDrivers.size(); i++) {
         if (listOfDrivers.at(i).getId() == driverId) {
@@ -27,7 +29,7 @@ Point TaxiCenter::getDriverLocation(int driverId) {
         }
     }
     throw "No Driver found";
-}
+}*/
 
 void TaxiCenter::addTrip(Trip *trip) {
     listOfTrips.push_back(trip);
@@ -72,6 +74,9 @@ string TaxiCenter::getCabString(int id) {
     return mapOfCabStrings[id];
 }
 
+void TaxiCenter::addDriverLocation(int id, Point location) {
+    mapOfDriversLocations[id] = location;
+}
 
 TaxiCenter::~TaxiCenter() {
     for (unsigned int i = 0; i < listOfCabs.size(); i++) {
@@ -115,4 +120,18 @@ void TaxiCenter::bfsWrapper(Node<Point> startNode, Node<Point> endNode, TaxiCent
 TaxiCenter::TaxiCenter() : bfsInstance(NULL){
 
 }
+
+int TaxiCenter::getTimer() {
+    return timer;
+}
+
+int TaxiCenter::setTimer() {
+    this->timer++;
+}
+
+Point TaxiCenter::getDriverLocation(int driverId) {
+    return Point();
+}
+
+
 

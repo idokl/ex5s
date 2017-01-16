@@ -129,6 +129,12 @@ void Driver::run(Socket *socket) {
             }
             case 9: {
                 moveOneStep();
+                //serialization:
+                SerializationClass<Point> serializeClass;
+                string serializedPointStr =
+                        serializeClass.serializationObject(this->currentPlace());
+                //pass point to server
+                socket->sendData(serializedPointStr, 0);
                 break;
             }
             //option 10: assign a trip.

@@ -5,6 +5,9 @@
 using namespace std;
 
 int globalX=0;
+int runOnce =0;
+pthread_mutex_t listOfTripsMutex;
+
 
 TaxiCenter ProgramFlow::createTaxiCenter(BfsAlgorithm<Point> bfs) {
     return TaxiCenter(bfs);
@@ -16,55 +19,83 @@ Graph<Point> *ProgramFlow::createGrid(int width, int height, vector<Point> listO
 }
 
 
-void *ProgramFlow::threadsRun(void* threadStruct){
-    int runOnce =0;
+void *ProgramFlow::threadsRun(void* threadStruct) {
+
     string inputString;
-    threadData *threadData = (struct threadData*)threadStruct;
+    threadData *threadData = (struct threadData *) threadStruct;
     int socketDescriptor = threadData->socketDescriptor;
     Socket *socket = threadData->socket;
     TaxiCenter *taxiCenter = threadData->taxiCenter;
-    char buffer[1024];
-    while(true) {
-        if(runOnce==0) {
-            switch (globalX) {
-                case 1:{
-                    socket->reciveData(buffer, sizeof(buffer), socketDescriptor);
-                    string driverIdString = string(buffer);
-                    int driverId = stoi(driverIdString);
-                    //send taxi data
-                    string dataOfCabOfDriver = taxiCenter->getCabString(driverId);
-                    socket->sendData(dataOfCabOfDriver, socketDescriptor);
-                }
-                case 4: {
-                    getline(cin, inputString);
-                    try {
-                        // here we have to add (in ex5) the command: find the socket of the
-                        // corresponding driver
-                        socket->sendData("4", socketDescriptor);
-                        socket->reciveData(buffer, sizeof(buffer), socketDescriptor);
-                        Point driverLocation;
-                        string locationStr(buffer, sizeof(buffer));
-                        SerializationClass<Point> serializeClass;
-                        driverLocation =
-                                serializeClass.deSerializationObject(locationStr, driverLocation);
-                        //print driver location
-                        cout << driverLocation << '\n';
-                    } catch (const char *msg) {
-                        cerr << msg << endl;
-                    }
-                    runOnce = 1;
-                    break;
-                }
-                case 7: {
-                    exit(0);
-                }
-                default:
-                    break;
 
+    char buffer[1024];
+    while (true) {
+        switch (globalX) {
+            case 1: {
+                if (runOnce == 1) {
+                    break;
+                }
+                socket->reciveData(buffer, sizeof(buffer), socketDescriptor);
+                string driverIdString = string(buffer);
+                threadData->id = stoi(driverIdString);
+                //send taxi data
+                string dataOfCabOfDriver = taxiCenter->getCabString(threadData->id);
+                socket->sendData(dataOfCabOfDriver, socketDescriptor);
+                runOnce = 1;
+                break;
             }
+            case 7: {
+                exit(0);
+            }
+            case 9: {
+                if (runOnce == 1) {
+                    break;
+                }
+                // flag that indicate whether there was assigning trip in this time
+                // (for preventing assigning of trip and movement in the same time)
+                int assignFlag = 0;
+                //assign trip to the driver if now is the starting time of the trip
+                pthread_mutex_lock(&listOfTripsMutex);
+                for (unsigned int i = 0; i < taxiCenter->getListOfTrips().size(); i++) {
+                    if (taxiCenter->getListOfTrips().at(i)->getTime() ==
+                        taxiCenter->getTimer()) {
+                        if (taxiCenter->getDriverLocation(threadData->id) ==
+                            taxiCenter->getListOfTrips().at(i)->getStartingPoint()) {
+                            //option 10 (of driver): assign a trip to the driver
+                            socket->sendData("10", socketDescriptor);
+                            SerializationClass<Trip *> serializeClass;
+                            string serializedTrip = serializeClass.serializationObject(
+                                    taxiCenter->getListOfTrips().at(i));
+                            socket->sendData(serializedTrip, socketDescriptor);
+                            delete taxiCenter->getListOfTrips().at(i);
+                            taxiCenter->deleteTrip(i);
+                            assignFlag = 1;
+                            break;
+                        }
+                    }
+                }
+                pthread_mutex_unlock(&listOfTripsMutex);
+                if (assignFlag == 0) {
+                    //sending 9 in order to advance the driver one step
+                    socket->sendData("9", socketDescriptor);
+
+                    socket->reciveData(buffer, sizeof(buffer), socketDescriptor);
+                    string locationStr(buffer, sizeof(buffer));
+                    Point driverLocation;
+                    SerializationClass<Point> serializeClass;
+                    driverLocation =
+                            serializeClass.deSerializationObject(locationStr, driverLocation);
+                    taxiCenter->addDriverLocation(threadData->id, driverLocation);
+                }
+                runOnce = 1;
+                break;
+            }
+            default:
+                break;
+
         }
     }
 }
+
 
 
 
@@ -116,6 +147,7 @@ void ProgramFlow::run(Socket *mainSocket) {
                         threadData->socket = mainSocket;
                         threadData->socketDescriptor = descriptor;
                         threadData->taxiCenter = &taxiCenter;
+                        pthread_mutex_init(&listOfTripsMutex, 0);
                         pthread_t pthread;
                         pthread_create(&pthread, NULL, ProgramFlow::threadsRun, threadData);
                    }
@@ -140,58 +172,21 @@ void ProgramFlow::run(Socket *mainSocket) {
                 break;
             }
             case 4: {
-                globalX = 4;
                 //query about the location of a specific driver
                 getline(cin, inputString);
-                try {
-                    // here we have to add (in ex5) the command: find the socket of the
-                    // corresponding driver
-                    //socket->sendData("4");
-                    char buffer[1024];
-                   // socket->reciveData(buffer, sizeof(buffer));
-                    Point driverLocation;
-                    string locationStr(buffer, sizeof(buffer));
-                    SerializationClass<Point> serializeClass;
-                    driverLocation =
-                            serializeClass.deSerializationObject(locationStr, driverLocation);
-                    //print driver location
-                    cout << driverLocation << '\n';
-                } catch (const char *msg) {
-                    cerr << msg << endl;
-                }
+                int id = stoi(inputString);
+                Point location = taxiCenter.getDriverLocation(id);
+                cout << location << endl;
                 break;
             }
             case 7: {
-                //ask the client to shutdown itself
-               // socket->sendData("7");
                 //deallocate memory and terminate the program
                 delete grid;
                 exit(0);
             }
             case 9: {
-                timer++;
-                // flag that indicate whether there was assigning trip in this time
-                // (for preventing assigning of trip and movement in the same time)
-                int assignFlag = 0;
-                //assign trip to the driver if now is the starting time of the trip
-                for (unsigned int i = 0; i < taxiCenter.getListOfTrips().size(); i++) {
-                    if (taxiCenter.getListOfTrips().at(i)->getTime() == timer) {
-                        //option 10 (of driver): assign a trip to the driver
-                      //  socket->sendData("10");
-                        SerializationClass<Trip *> serializeClass;
-                        string serializedTrip = serializeClass.serializationObject(
-                                taxiCenter.getListOfTrips().at(i));
-                        //socket->sendData(serializedTrip);
-                        delete taxiCenter.getListOfTrips().at(i);
-                        taxiCenter.deleteTrip(i);
-                        assignFlag = 1;
-                        break;
-                    }
-                }
-                if (assignFlag == 0) {
-                    //sending 9 in order to advance the driver one step
-                   // socket->sendData("9");
-                }
+                globalX = 9;
+                runOnce=0;
                 break;
             }
             default:

@@ -16,13 +16,14 @@
  */
 class TaxiCenter {
 private:
-    vector<Driver> listOfDrivers;
+    //vector<Driver> listOfDrivers;
     vector<Trip *> listOfTrips;
     vector<Cab *> listOfCabs;
     map<int,string> mapOfCabStrings;
     map<int,Point> mapOfDriversLocations;
     BfsAlgorithm<Point> bfsInstance;
     stack <Node<Point>> nextPointsOfPath;
+    int timer;
 public:
 
     TaxiCenter();
@@ -32,6 +33,7 @@ public:
 
     void bfsNavigate(Node<Point> startNode,  Node<Point> endNode);
 
+    void addDriverLocation(int id, Point location);
         //add cab to the taxi center
     void addCab(Cab *cab);
 
@@ -69,7 +71,9 @@ public:
 
     void bfsWrapper(Node<Point> startNode, Node<Point> endNode, TaxiCenter *taxiCenter);
 
+    int getTimer();
 
+    int setTimer();
     //destructor
     ~TaxiCenter();
 };
