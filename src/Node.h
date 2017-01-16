@@ -36,6 +36,7 @@ public:
         ar & value;
     }
 
+    Node();
     Node(T value);
 
     //nodes comparison according to their values
@@ -66,6 +67,11 @@ bool Node<T>::operator<(const Node<T> &other) const {
 template<class T>
 T Node<T>::getValue() {
     return this->value;
+}
+template<class T>
+
+Node<T>::Node() {
+
 }
 
 

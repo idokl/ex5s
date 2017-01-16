@@ -1,9 +1,6 @@
 #include "ProgramFlow.h"
-#include "SerializationClass.h"
-#include "CabFactory.h"
-#include <pthread.h>
-#include <thread_db.h>
-#include "Tcp.h"
+
+
 
 using namespace std;
 
@@ -99,8 +96,7 @@ void ProgramFlow::run(Socket *mainSocket) {
     Cab *cabForDriver = NULL;
     int expectedNumberOfDrivers = 0;
     int timer = 0;
-    struct threadData threadDataStruct;
-    threadData * threadData = &threadDataStruct;
+    threadData * threadData = new struct threadData;
     while (true) {
         //get number of option and do the defined operation
         getline(cin, inputString);
@@ -113,7 +109,6 @@ void ProgramFlow::run(Socket *mainSocket) {
                 if (expectedNumberOfDrivers == 0) {
                     break;
                 }else{
-                    char buffer[1024];
                     for(unsigned int i=0; i<expectedNumberOfDrivers; i++){
                         int descriptor = ProgramFlow::acceptConnection(mainSocket);
                         globalX =1;
@@ -122,7 +117,7 @@ void ProgramFlow::run(Socket *mainSocket) {
                         threadData->socketDescriptor = descriptor;
                         threadData->taxiCenter = &taxiCenter;
                         pthread_t pthread;
-                        pthread_create(&pthread, NULL, ProgramFlow::threadsRun, (void*)&threadData);
+                        pthread_create(&pthread, NULL, ProgramFlow::threadsRun, threadData);
                    }
                 }
                 break;

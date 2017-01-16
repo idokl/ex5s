@@ -1,16 +1,18 @@
-#include <thread_db.h>
 #include "TaxiCenter.h"
+
 #include "SerializationClass.h"
 
 TaxiCenter::TaxiCenter(BfsAlgorithm<Point> &bfsInstance) : bfsInstance(bfsInstance) {}
 
-void * TaxiCenter::createTrip(InputParsing::parsedTripData parsedTripDataTrip) {
+void  TaxiCenter::createTrip(InputParsing::parsedTripData parsedTripDataTrip) {
     Node<Point> startNode(parsedTripDataTrip.start);
     Node<Point> endNode(parsedTripDataTrip.end);
     this->bfsWrapper(startNode,endNode,this);
 
     Trip *trip = new Trip(parsedTripDataTrip.id, parsedTripDataTrip.start, parsedTripDataTrip.end,
                           parsedTripDataTrip.numberOfPassengers, parsedTripDataTrip.tariff, nextPointsOfPath, parsedTripDataTrip.time);
+
+
     listOfTrips.push_back(trip);
 }
 
@@ -85,6 +87,12 @@ void TaxiCenter::deleteTrip(int i) {
     this->listOfTrips.erase(this->listOfTrips.begin() + i);
 }
 
+struct nodeOfPoints{
+    Node<Point> startNode;
+    Node<Point> endNode;
+    TaxiCenter* taxiCenter;
+};
+
 void *TaxiCenter::runBfsThread(void *t) {
     nodeOfPoints *x =(struct nodeOfPoints*)t;
     x->taxiCenter->bfsNavigate(x->startNode,x->endNode);
@@ -95,16 +103,20 @@ void TaxiCenter::bfsNavigate(Node<Point> startNode,  Node<Point> endNode) {
     this->nextPointsOfPath = this->bfsInstance.navigate(startNode, endNode);
 }
 
-void TaxiCenter::bfsWrapper(Node<Point> startNode, Node<Point> endNode, TaxiCenter* taxiCenter) {
+void TaxiCenter::bfsWrapper(Node<Point> startNode, Node<Point> endNode, TaxiCenter *taxiCenter) {
 
-   nodeOfPoints *t;
+   nodeOfPoints *nodeOfPoints = new struct nodeOfPoints;
 
-    t->startNode = startNode;
-    t->endNode = endNode;
-    t->taxiCenter=taxiCenter;
+    nodeOfPoints->startNode = startNode;
+    nodeOfPoints->endNode = endNode;
+    nodeOfPoints->taxiCenter=taxiCenter;
 
-    thread_t bfsThread;
-    pthread_create(&bfsThread, NULL, runBfsThread, (void*)t);
+    pthread_t bfsThread;
+    pthread_create(&bfsThread, NULL, runBfsThread, nodeOfPoints);
     pthread_join(bfsThread, NULL);
+}
+
+TaxiCenter::TaxiCenter() : bfsInstance(NULL){
+
 }
 

@@ -6,6 +6,7 @@
 #include "Passenger.h"
 #include "BfsAlgorithm.h"
 #include "InputParsing.h"
+#include <pthread.h>
 
 /*
  * This class is responsible for communication with all the drivers, cabs and trips.
@@ -22,11 +23,7 @@ private:
     stack <Node<Point>> nextPointsOfPath;
 public:
 
-    struct nodeOfPoints{
-        Node<Point> startNode;
-        Node<Point> endNode;
-        TaxiCenter* taxiCenter;
-    };
+    TaxiCenter();
 
     //constructor
     TaxiCenter(BfsAlgorithm<Point> &bfsInstance);
@@ -58,7 +55,7 @@ public:
 
     //create a trip (according to the parameters that are given in the 'parsed trip data' struct)
     //and add the trip to the taxi center
-    void * createTrip(InputParsing::parsedTripData);
+    void createTrip(InputParsing::parsedTripData);
 
     //get cab that is belonging to the taxi center (according to the cab id).
     //(if no such cab in the system, throw "no cab found")
@@ -68,7 +65,7 @@ public:
 
     void deleteTrip(int i);
 
-    void bfsWrapper(Node<Point> startNode, Node<Point> endNode, TaxiCenter* taxiCenter);
+    void bfsWrapper(Node<Point> startNode, Node<Point> endNode, TaxiCenter *taxiCenter);
 
 
     //destructor

@@ -11,6 +11,9 @@
 #include "LuxuryCab.h"
 #include "BfsAlgorithm.h"
 #include "TaxiCenter.h"
+#include "SerializationClass.h"
+#include "CabFactory.h"
+#include <pthread.h>
 
 /*
  * This class manage the flow of the program.
@@ -51,7 +54,7 @@ public:
 
     //create rectangular matrix with list of impassable points
     static Graph<Point> *createGrid(int width, int height, vector<Point> listOfObstacles);
-    static void* threadsRun(void *r);
+    static void* threadsRun(void *);
     struct threadData{
         Socket *socket;
         int socketDescriptor;
