@@ -1,3 +1,5 @@
+#define debugMassagesDriver
+
 #include "Driver.h"
 
 Driver::Driver(int id, int age, Status_Of_Marriage status, int yearsOfExperience, int vehicleId) :
@@ -99,7 +101,7 @@ void Driver::moveOneStep() {
 
 //communicate with the server
 void Driver::run(Socket *socket) {
-    char buffer[8192];
+    char buffer[20000];
     stringstream ss;
     ss << this->id;
     socket->sendData(ss.str(), 0);
@@ -124,11 +126,17 @@ void Driver::run(Socket *socket) {
                 break;
             }
             case 7: {
+#ifdef debugMassagesDriver
+                cout << "Driver: case7" << endl;
+#endif
                 //terminate the program
                 delete cabOfDriver;
                 return;
             }
             case 9: {
+#ifdef debugMassagesDriver
+                cout << "Driver: case9 (moveOneStep) begin" << endl;
+#endif
                 moveOneStep();
                 //serialization:
                 SerializationClass<Point> serializeClass;
@@ -136,16 +144,25 @@ void Driver::run(Socket *socket) {
                         serializeClass.serializationObject(this->currentPlace());
                 //pass point to server
                 socket->sendData(serializedPointStr, 0);
+#ifdef debugMassagesDriver
+                cout << "Driver: case9 end" << endl;
+#endif
                 break;
             }
             //option 10: assign a trip.
             case 10: {
+#ifdef debugMassagesDriver
+                cout << "Driver: case10 (receiving trip) begin" << endl;
+#endif
                 memset(buffer, 0, sizeof(buffer));
                 socket->reciveData(buffer, sizeof(buffer),0);
                 string strTrip(buffer, sizeof(buffer));
                 SerializationClass<Trip *> serializeTripClass;
                 trip = serializeTripClass.deSerializationObject(strTrip, trip);
                 assignTrip(trip);
+#ifdef debugMassagesDriver
+                cout << "Driver: case10 end" << endl;
+#endif
                 break;
             }
             default: {
