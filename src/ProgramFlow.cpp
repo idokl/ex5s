@@ -7,6 +7,7 @@ using namespace std;
 int globalX=0;
 int runOnce =0;
 pthread_mutex_t listOfTripsMutex;
+pthread_mutex_t driverLocationsMapMutex;
 
 
 TaxiCenter ProgramFlow::createTaxiCenter(BfsAlgorithm<Point> bfs) {
@@ -28,10 +29,23 @@ void *ProgramFlow::threadsRun(void* threadStruct) {
     TaxiCenter *taxiCenter = threadData->taxiCenter;
 
     char buffer[8192];
+
+    socket->reciveData(buffer, sizeof(buffer), socketDescriptor);
+    string driverIdString = string(buffer);
+    threadData->id = stoi(driverIdString);
+    //send taxi data
+    string dataOfCabOfDriver = taxiCenter->getCabString(threadData->id);
+    socket->sendData(dataOfCabOfDriver, socketDescriptor);
+    runOnce = 1;
+
     while (true) {
         switch (globalX) {
+/*
             case 1: {
                 if (runOnce == 1) {
+                    break;
+                }
+                if (globalX != 1) {
                     break;
                 }
                 socket->reciveData(buffer, sizeof(buffer), socketDescriptor);
@@ -43,6 +57,7 @@ void *ProgramFlow::threadsRun(void* threadStruct) {
                 runOnce = 1;
                 break;
             }
+*/
             case 7: {
                 exit(0);
             }
@@ -85,7 +100,9 @@ void *ProgramFlow::threadsRun(void* threadStruct) {
                     SerializationClass<Point> serializeClass;
                     driverLocation =
                             serializeClass.deSerializationObject(locationStr, driverLocation);
+                    pthread_mutex_lock(&driverLocationsMapMutex);
                     taxiCenter->addDriverLocation(threadData->id, driverLocation);
+                    pthread_mutex_unlock(&driverLocationsMapMutex);
                 }
                 //runOnce = 1;
                 timeOfTheLastAction = taxiCenter->getTimer();
@@ -177,7 +194,9 @@ void ProgramFlow::run(Socket *mainSocket) {
                 //query about the location of a specific driver
                 getline(cin, inputString);
                 int id = stoi(inputString);
+                pthread_mutex_lock(&driverLocationsMapMutex);
                 Point location = taxiCenter.getDriverLocation(id);
+                pthread_mutex_unlock(&driverLocationsMapMutex);
                 cout << location << endl;
                 break;
             }

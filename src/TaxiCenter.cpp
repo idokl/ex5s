@@ -130,7 +130,7 @@ int TaxiCenter::setTimer() {
 }
 
 Point TaxiCenter::getDriverLocation(int driverId) {
-    return Point();
+    return mapOfDriversLocations[driverId];
 }
 
 
