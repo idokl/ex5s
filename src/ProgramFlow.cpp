@@ -38,8 +38,7 @@ void *ProgramFlow::threadsRun(void* threadStruct) {
     socket->sendData(dataOfCabOfDriver, socketDescriptor);
     int numOfClients = taxiCenter->getNumOfDrivers();
     while (true) {
-        if(circleFinish==numOfClients) {
-            circleFinish=0;
+            //circleFinish=0;
             switch (globalX) {
                 case 7: {
                     exit(0);
@@ -103,7 +102,6 @@ void *ProgramFlow::threadsRun(void* threadStruct) {
                 default:
                     break;
 
-            }
         }
     }
 }
@@ -143,6 +141,9 @@ void ProgramFlow::run(Socket *mainSocket) {
     while (true) {
         //get number of option and do the defined operation
         getline(cin, inputString);
+#ifdef debugMassagesProgramFlow
+        cout << inputString << endl;
+#endif
         switch (stoi(inputString)) {
             case 1: {
 #ifdef debugMassagesProgramFlow
@@ -233,13 +234,9 @@ void ProgramFlow::run(Socket *mainSocket) {
                 taxiCenter.setTimer();
 
                 globalX = 9;
-                runOnce=0;
 #ifdef debugMassagesProgramFlow
                 cout << "main thread: case9 end" << endl;
 #endif
-                while(circleFinish!=expectedNumberOfDrivers){
-                    sleep(0.01);
-                }
                 break;
             }
             default:
