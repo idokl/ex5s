@@ -37,7 +37,6 @@ void *ProgramFlow::threadsRun(void* threadStruct) {
     //send taxi data
     string dataOfCabOfDriver = taxiCenter->getCabString(threadData->id);
     socket->sendData(dataOfCabOfDriver, socketDescriptor);
-    int numOfClients = taxiCenter->getNumOfDrivers();
     while (true) {
             //circleFinish=0;
             switch (globalX) {
@@ -71,9 +70,7 @@ void *ProgramFlow::threadsRun(void* threadStruct) {
 #endif
 
                                 assignFlag = 1;
-                                pthread_mutex_lock(&circleFinishMutex);
                                 circleFinish--;
-                                pthread_mutex_unlock(&circleFinishMutex);
                                 break;
                             }
                         }
@@ -82,7 +79,9 @@ void *ProgramFlow::threadsRun(void* threadStruct) {
                     if (assignFlag == 0) {
                         //sending 9 in order to advance the driver one step
                         socket->sendData("9", socketDescriptor);
-
+#ifdef debugMassagesProgramFlow
+                        cout << "after 9 sent to driver" << endl;
+#endif
                         socket->reciveData(buffer, sizeof(buffer), socketDescriptor);
                         string locationStr(buffer, sizeof(buffer));
                         Point driverLocation;
@@ -166,7 +165,6 @@ void ProgramFlow::run(Socket *mainSocket) {
                     circleFinish = expectedNumberOfDrivers;
                     for(unsigned int i=0; i<expectedNumberOfDrivers; i++){
                         int descriptor = ProgramFlow::acceptConnection(mainSocket);
-                        globalX =1;
                         
                         threadData->socket = mainSocket;
                         threadData->socketDescriptor = descriptor;
