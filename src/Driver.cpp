@@ -99,15 +99,16 @@ void Driver::moveOneStep() {
 
 //communicate with the server
 void Driver::run(Socket *socket) {
-    char buffer[1024];
+    char buffer[8192];
     stringstream ss;
     ss << this->id;
     socket->sendData(ss.str(), 0);
 
     socket->reciveData(buffer, sizeof(buffer), 0);
     string cabDataString = string(buffer);
-
     cabOfDriver = CabFactory::createCab(cabDataString);
+
+    memset(buffer, 0, sizeof(buffer));
     Trip *trip = NULL;
     while (true) {
         socket->reciveData(buffer, sizeof(buffer), 0);
@@ -139,6 +140,7 @@ void Driver::run(Socket *socket) {
             }
             //option 10: assign a trip.
             case 10: {
+                memset(buffer, 0, sizeof(buffer));
                 socket->reciveData(buffer, sizeof(buffer),0);
                 string strTrip(buffer, sizeof(buffer));
                 SerializationClass<Trip *> serializeTripClass;

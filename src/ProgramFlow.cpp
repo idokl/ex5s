@@ -20,14 +20,14 @@ Graph<Point> *ProgramFlow::createGrid(int width, int height, vector<Point> listO
 
 
 void *ProgramFlow::threadsRun(void* threadStruct) {
-
+    int timeOfTheLastAction = -1;
     string inputString;
     threadData *threadData = (struct threadData *) threadStruct;
     int socketDescriptor = threadData->socketDescriptor;
     Socket *socket = threadData->socket;
     TaxiCenter *taxiCenter = threadData->taxiCenter;
 
-    char buffer[1024];
+    char buffer[8192];
     while (true) {
         switch (globalX) {
             case 1: {
@@ -47,7 +47,8 @@ void *ProgramFlow::threadsRun(void* threadStruct) {
                 exit(0);
             }
             case 9: {
-                if (runOnce == 1) {
+                //if (runOnce == 1) {
+                if (timeOfTheLastAction == taxiCenter->getTimer()) {
                     break;
                 }
                 // flag that indicate whether there was assigning trip in this time
@@ -86,7 +87,8 @@ void *ProgramFlow::threadsRun(void* threadStruct) {
                             serializeClass.deSerializationObject(locationStr, driverLocation);
                     taxiCenter->addDriverLocation(threadData->id, driverLocation);
                 }
-                runOnce = 1;
+                //runOnce = 1;
+                timeOfTheLastAction = taxiCenter->getTimer();
                 break;
             }
             default:
@@ -126,7 +128,7 @@ void ProgramFlow::run(Socket *mainSocket) {
     TaxiCenter taxiCenter = ProgramFlow::createTaxiCenter(bfs);
     Cab *cabForDriver = NULL;
     int expectedNumberOfDrivers = 0;
-    int timer = 0;
+    //int timer = 0;
     threadData * threadData = new struct threadData;
     while (true) {
         //get number of option and do the defined operation
@@ -185,6 +187,7 @@ void ProgramFlow::run(Socket *mainSocket) {
                 exit(0);
             }
             case 9: {
+                taxiCenter.setTimer();
                 globalX = 9;
                 runOnce=0;
                 break;
