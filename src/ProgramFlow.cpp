@@ -5,7 +5,7 @@
 using namespace std;
 
 int globalX=0;
-int runOnce =0;
+int circleFinish;
 pthread_mutex_t listOfTripsMutex;
 pthread_mutex_t driverLocationsMapMutex;
 
@@ -36,87 +36,74 @@ void *ProgramFlow::threadsRun(void* threadStruct) {
     //send taxi data
     string dataOfCabOfDriver = taxiCenter->getCabString(threadData->id);
     socket->sendData(dataOfCabOfDriver, socketDescriptor);
-    runOnce = 1;
-
+    int numOfClients = taxiCenter->getNumOfDrivers();
     while (true) {
-        switch (globalX) {
-/*
-            case 1: {
-                if (runOnce == 1) {
-                    break;
+        if(circleFinish==numOfClients) {
+            circleFinish=0;
+            switch (globalX) {
+                case 7: {
+                    exit(0);
                 }
-                if (globalX != 1) {
-                    break;
-                }
-                socket->reciveData(buffer, sizeof(buffer), socketDescriptor);
-                string driverIdString = string(buffer);
-                threadData->id = stoi(driverIdString);
-                //send taxi data
-                string dataOfCabOfDriver = taxiCenter->getCabString(threadData->id);
-                socket->sendData(dataOfCabOfDriver, socketDescriptor);
-                runOnce = 1;
-                break;
-            }
-*/
-            case 7: {
-                exit(0);
-            }
-            case 9: {
-                //if (runOnce == 1) {
-                if (timeOfTheLastAction == taxiCenter->getTimer()) {
-                    break;
-                }
-                // flag that indicate whether there was assigning trip in this time
-                // (for preventing assigning of trip and movement in the same time)
-                int assignFlag = 0;
-                //assign trip to the driver if now is the starting time of the trip
-                pthread_mutex_lock(&listOfTripsMutex);
-                for (unsigned int i = 0; i < taxiCenter->getListOfTrips().size(); i++) {
-                    if (taxiCenter->getListOfTrips().at(i)->getTime() ==
-                        taxiCenter->getTimer()) {
-                        if (taxiCenter->getDriverLocation(threadData->id) ==
-                            taxiCenter->getListOfTrips().at(i)->getStartingPoint()) {
-                            //option 10 (of driver): assign a trip to the driver
-                            socket->sendData("10", socketDescriptor);
-                            SerializationClass<Trip *> serializeClass;
-                            string serializedTrip = serializeClass.serializationObject(
-                                    taxiCenter->getListOfTrips().at(i));
-                            socket->sendData(serializedTrip, socketDescriptor);
-                            delete taxiCenter->getListOfTrips().at(i);
-                            taxiCenter->deleteTrip(i);
+                case 9: {
+                    if (timeOfTheLastAction == taxiCenter->getTimer()) {
+                        break;
+                    }
+                    // flag that indicate whether there was assigning trip in this time
+                    // (for preventing assigning of trip and movement in the same time)
+                    int assignFlag = 0;
+                    //assign trip to the driver if now is the starting time of the trip
+                    pthread_mutex_lock(&listOfTripsMutex);
+                    for (unsigned int i = 0; i < taxiCenter->getListOfTrips().size(); i++) {
+                        if (taxiCenter->getListOfTrips().at(i)->getTime() ==
+                            taxiCenter->getTimer()) {
+                            if (taxiCenter->getDriverLocation(threadData->id) ==
+                                taxiCenter->getListOfTrips().at(i)->getStartingPoint()) {
+                                //option 10 (of driver): assign a trip to the driver
+                                socket->sendData("10", socketDescriptor);
+                                SerializationClass<Trip *> serializeClass;
+                                string serializedTrip = serializeClass.serializationObject(
+                                        taxiCenter->getListOfTrips().at(i));
+                                socket->sendData(serializedTrip, socketDescriptor);
+                                delete taxiCenter->getListOfTrips().at(i);
+                                taxiCenter->deleteTrip(i);
 #ifdef debugMassagesProgramFlow
-                            cout << "secondary thread: (socket descriptor: " << socketDescriptor << "): trip was sent to the client" << endl;
+                                cout << "secondary thread: (socket descriptor: " << socketDescriptor << "): trip was sent to the client" << endl;
 #endif
-                            assignFlag = 1;
-                            break;
+
+                                assignFlag = 1;
+                                break;
+                            }
                         }
                     }
-                }
-                pthread_mutex_unlock(&listOfTripsMutex);
-                if (assignFlag == 0) {
-                    //sending 9 in order to advance the driver one step
-                    socket->sendData("9", socketDescriptor);
-                    socket->reciveData(buffer, sizeof(buffer), socketDescriptor);
-                    string locationStr(buffer, sizeof(buffer));
-                    Point driverLocation;
-                    SerializationClass<Point> serializeClass;
-                    driverLocation =
-                            serializeClass.deSerializationObject(locationStr, driverLocation);
-                    pthread_mutex_lock(&driverLocationsMapMutex);
-#ifdef debugMassagesProgramFlow
-                    cout << "secondary thread: (socket descriptor: " << socketDescriptor << "): 9 was sent to the client" << endl;
-                    cout << "secondary thread: (socket descriptor: " << socketDescriptor << "): the point " << driverLocation << " was received from the client" << endl;
-#endif
-                    taxiCenter->addDriverLocation(threadData->id, driverLocation);
-                    pthread_mutex_unlock(&driverLocationsMapMutex);
-                }
-                //runOnce = 1;
-                timeOfTheLastAction = taxiCenter->getTimer();
-                break;
-            }
-            default:
-                break;
+                    pthread_mutex_unlock(&listOfTripsMutex);
+                    if (assignFlag == 0) {
+                        //sending 9 in order to advance the driver one step
+                        socket->sendData("9", socketDescriptor);
 
+                        socket->reciveData(buffer, sizeof(buffer), socketDescriptor);
+                        string locationStr(buffer, sizeof(buffer));
+                        Point driverLocation;
+                        SerializationClass<Point> serializeClass;
+                        driverLocation =
+                                serializeClass.deSerializationObject(locationStr, driverLocation);
+                        pthread_mutex_lock(&driverLocationsMapMutex);
+                        taxiCenter->addDriverLocation(threadData->id, driverLocation);
+                        pthread_mutex_unlock(&driverLocationsMapMutex);
+#ifdef debugMassagesProgramFlow
+                        cout << "secondary thread: (socket descriptor: " << socketDescriptor << "): 9 was sent to the client" << endl;
+                        cout << "secondary thread: (socket descriptor: " << socketDescriptor << "): the point " << driverLocation << " was received from the client" << endl;
+#endif
+
+                    }
+                    //runOnce = 1;
+                    timeOfTheLastAction = taxiCenter->getTimer();
+                    circleFinish++;
+                    break;
+                }
+                default:
+                    break;
+
+            }
         }
     }
 }
@@ -168,6 +155,7 @@ void ProgramFlow::run(Socket *mainSocket) {
                 if (expectedNumberOfDrivers == 0) {
                     break;
                 }else{
+                    circleFinish = expectedNumberOfDrivers;
                     for(unsigned int i=0; i<expectedNumberOfDrivers; i++){
                         int descriptor = ProgramFlow::acceptConnection(mainSocket);
                         globalX =1;
@@ -221,9 +209,9 @@ void ProgramFlow::run(Socket *mainSocket) {
                 //query about the location of a specific driver
                 getline(cin, inputString);
                 int id = stoi(inputString);
-                pthread_mutex_lock(&driverLocationsMapMutex);
+                //pthread_mutex_lock(&driverLocationsMapMutex);
                 Point location = taxiCenter.getDriverLocation(id);
-                pthread_mutex_unlock(&driverLocationsMapMutex);
+                //pthread_mutex_unlock(&driverLocationsMapMutex);
                 cout << location << endl;
 #ifdef debugMassagesProgramFlow
                 cout << "main thread: case4 end" << endl;
@@ -243,11 +231,15 @@ void ProgramFlow::run(Socket *mainSocket) {
                 cout << "main thread: case9 begin. current time: " << taxiCenter.getTimer() << endl;
 #endif
                 taxiCenter.setTimer();
+
                 globalX = 9;
                 runOnce=0;
 #ifdef debugMassagesProgramFlow
                 cout << "main thread: case9 end" << endl;
 #endif
+                while(circleFinish!=expectedNumberOfDrivers){
+                    sleep(0.01);
+                }
                 break;
             }
             default:

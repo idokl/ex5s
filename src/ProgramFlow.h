@@ -12,6 +12,7 @@
 #include "BfsAlgorithm.h"
 #include "TaxiCenter.h"
 #include "CabFactory.h"
+#include "SerializationClass.h"
 #include <pthread.h>
 
 /*

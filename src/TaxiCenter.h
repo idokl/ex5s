@@ -42,10 +42,7 @@ public:
     static void* runBfsThread(void * nodeOfPoints);
     // allocate the trips that were received in the system to the appropriate drivers
     // and command each of them to drive to the end point of its trip
-    string startDriving();
 
-    //get list of the drivers
-    const vector<Driver> &getListOfDrivers() const;
 
     //get list of the trips
     const vector<Trip *> &getListOfTrips() const;
@@ -73,7 +70,9 @@ public:
 
     int getTimer();
 
-    int setTimer();
+    int getNumOfDrivers();
+
+    void setTimer();
     //destructor
     ~TaxiCenter();
 };

@@ -11,25 +11,10 @@ void TaxiCenter::createTrip(InputParsing::parsedTripData parsedTripDataTrip) {
                           parsedTripDataTrip.numberOfPassengers, parsedTripDataTrip.tariff, nextPointsOfPath, parsedTripDataTrip.time);
     listOfTrips.push_back(trip);
 }
-/*
-const vector<Driver> &TaxiCenter::getListOfDrivers() const {
-    return listOfDrivers;
-}
-*/
+
 const vector<Trip *> &TaxiCenter::getListOfTrips() const {
     return listOfTrips;
 }
-
-
-/*
-Point TaxiCenter::getDriverLocation(int driverId) {
-    for (unsigned int i = 0; i < listOfDrivers.size(); i++) {
-        if (listOfDrivers.at(i).getId() == driverId) {
-            return listOfDrivers.at(i).currentPlace();
-        }
-    }
-    throw "No Driver found";
-}*/
 
 void TaxiCenter::addTrip(Trip *trip) {
     listOfTrips.push_back(trip);
@@ -43,23 +28,6 @@ void TaxiCenter::addCabString(int id, string cabString) {
     mapOfCabStrings[id] = cabString;
 }
 
-string TaxiCenter::startDriving() {
-    for (unsigned int i = 0; i < mapOfDriversLocations.size(); i++) {
-        if (listOfTrips.size() > 0) {
-            for (unsigned int j = 0; j < listOfTrips.size(); j++) {
-                if ((mapOfDriversLocations.at(i)==listOfTrips.at(j)->getStartingPoint())) {
-                    //listOfDrivers.at(i).assignTrip(listOfTrips.at(j));
-                    SerializationClass<Trip *> serializeClass;
-                    string str = serializeClass.serializationObject(listOfTrips.at(j));
-                    delete listOfTrips[j];
-                    listOfTrips.erase(listOfTrips.begin() + j);
-                    return str;
-                }
-            }
-        }
-    }
-    return NULL;
-}
 
 Cab *TaxiCenter::getCab(int id) {
     for (unsigned int i = 0; i < listOfCabs.size(); i++) {
@@ -125,12 +93,16 @@ int TaxiCenter::getTimer() {
     return timer;
 }
 
-int TaxiCenter::setTimer() {
+void TaxiCenter::setTimer() {
     this->timer++;
 }
 
 Point TaxiCenter::getDriverLocation(int driverId) {
-    return mapOfDriversLocations[driverId];
+    return this->mapOfDriversLocations[driverId];
+}
+
+int TaxiCenter::getNumOfDrivers() {
+    return (int)this->mapOfDriversLocations.size();
 }
 
 

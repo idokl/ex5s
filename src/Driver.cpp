@@ -138,6 +138,7 @@ void Driver::run(Socket *socket) {
                 cout << "Driver: case9 (moveOneStep) begin" << endl;
 #endif
                 moveOneStep();
+                cout << "current location after move" << this->currentLocation << endl;
                 //serialization:
                 SerializationClass<Point> serializeClass;
                 string serializedPointStr =
