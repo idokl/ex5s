@@ -43,6 +43,7 @@ void *ProgramFlow::threadsRun(void* threadStruct) {
                 case 7: {
                     exit(0);
                 }
+
                 case 9: {
                     if (timeOfTheLastAction == taxiCenter->getTimer()) {
                         break;
