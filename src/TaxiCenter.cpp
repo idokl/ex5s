@@ -45,6 +45,7 @@ string TaxiCenter::getCabString(int id) {
 
 void TaxiCenter::addDriverLocation(int id, Point location) {
     mapOfDriversLocations[id] = location;
+
 }
 
 TaxiCenter::~TaxiCenter() {

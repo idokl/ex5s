@@ -30,13 +30,14 @@ void *ProgramFlow::threadsRun(void* threadStruct) {
     TaxiCenter *taxiCenter = threadData->taxiCenter;
 
     char buffer[20000];
-
+/*
     socket->reciveData(buffer, sizeof(buffer), socketDescriptor);
     string driverIdString = string(buffer);
     threadData->id = stoi(driverIdString);
     //send taxi data
     string dataOfCabOfDriver = taxiCenter->getCabString(threadData->id);
     socket->sendData(dataOfCabOfDriver, socketDescriptor);
+*/
     int numOfClients = taxiCenter->getNumOfDrivers();
     while (true) {
             //circleFinish=0;
@@ -69,7 +70,6 @@ void *ProgramFlow::threadsRun(void* threadStruct) {
 #ifdef debugMassagesProgramFlow
                                 cout << "secondary thread: (socket descriptor: " << socketDescriptor << "): trip was sent to the client" << endl;
 #endif
-
                                 assignFlag = 1;
                                 break;
                             }
@@ -98,6 +98,9 @@ void *ProgramFlow::threadsRun(void* threadStruct) {
                     timeOfTheLastAction = taxiCenter->getTimer();
                     pthread_mutex_lock(&circleFinishMutex);
                     circleFinish--;
+#ifdef debugMassagesProgramFlow
+                    cout << "secondary thread: (socket descriptor: " << socketDescriptor << "): I did: circleFinish--. now circleFinish = " << circleFinish << endl;
+#endif
                     pthread_mutex_unlock(&circleFinishMutex);
                     //runOnce = 1;
                     //circleFinish++;
@@ -116,6 +119,9 @@ void *ProgramFlow::threadsRun(void* threadStruct) {
 
 
 void ProgramFlow::run(Socket *mainSocket) {
+
+    char buffer[20000];
+
     string inputString;
     //get the grid dimensions
     getline(cin, inputString);
@@ -159,16 +165,25 @@ void ProgramFlow::run(Socket *mainSocket) {
                 //(in ex5 this condition has to be deleted)
                 if (expectedNumberOfDrivers == 0) {
                     break;
-                }else{
-                    circleFinish = expectedNumberOfDrivers;
+                } else {
+//                    circleFinish = expectedNumberOfDrivers;
                     for(unsigned int i=0; i<expectedNumberOfDrivers; i++){
                         int descriptor = ProgramFlow::acceptConnection(mainSocket);
                         globalX =1;
-                        
+/**/
+                        mainSocket->reciveData(buffer, sizeof(buffer), descriptor);
+                        string driverIdString = string(buffer);
+                        threadData->id = stoi(driverIdString);
+                        //send taxi data
+                        string dataOfCabOfDriver = taxiCenter.getCabString(threadData->id);
+                        mainSocket->sendData(dataOfCabOfDriver, descriptor);
+/**/
                         threadData->socket = mainSocket;
                         threadData->socketDescriptor = descriptor;
                         threadData->taxiCenter = &taxiCenter;
                         pthread_mutex_init(&listOfTripsMutex, 0);
+                        pthread_mutex_init(&driverLocationsMapMutex, 0);
+                        pthread_mutex_init(&circleFinishMutex, 0);
                         pthread_t pthread;
                         pthread_create(&pthread, NULL, ProgramFlow::threadsRun, threadData);
                    }
