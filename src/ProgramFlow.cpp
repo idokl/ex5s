@@ -8,6 +8,7 @@ int globalX=0;
 int circleFinish;
 pthread_mutex_t listOfTripsMutex;
 pthread_mutex_t driverLocationsMapMutex;
+pthread_mutex_t circleFinishMutex;
 
 
 TaxiCenter ProgramFlow::createTaxiCenter(BfsAlgorithm<Point> bfs) {
@@ -28,7 +29,7 @@ void *ProgramFlow::threadsRun(void* threadStruct) {
     Socket *socket = threadData->socket;
     TaxiCenter *taxiCenter = threadData->taxiCenter;
 
-    char buffer[8192];
+    char buffer[20000];
 
     socket->reciveData(buffer, sizeof(buffer), socketDescriptor);
     string driverIdString = string(buffer);
@@ -70,6 +71,9 @@ void *ProgramFlow::threadsRun(void* threadStruct) {
 #endif
 
                                 assignFlag = 1;
+                                pthread_mutex_lock(&circleFinishMutex);
+                                circleFinish--;
+                                pthread_mutex_unlock(&circleFinishMutex);
                                 break;
                             }
                         }
@@ -94,9 +98,12 @@ void *ProgramFlow::threadsRun(void* threadStruct) {
 #endif
 
                     }
-                    //runOnce = 1;
                     timeOfTheLastAction = taxiCenter->getTimer();
-                    circleFinish++;
+                    pthread_mutex_lock(&circleFinishMutex);
+                    circleFinish--;
+                    pthread_mutex_unlock(&circleFinishMutex);
+                    //runOnce = 1;
+                    //circleFinish++;
                     break;
                 }
                 default:
@@ -231,9 +238,17 @@ void ProgramFlow::run(Socket *mainSocket) {
 #ifdef debugMassagesProgramFlow
                 cout << "main thread: case9 begin. current time: " << taxiCenter.getTimer() << endl;
 #endif
-                taxiCenter.setTimer();
+                circleFinish = expectedNumberOfDrivers;
 
+                taxiCenter.setTimer();
                 globalX = 9;
+
+                while (true) {
+                    sleep(0.1);
+                    if (circleFinish == 0)
+                        break;
+                }
+
 #ifdef debugMassagesProgramFlow
                 cout << "main thread: case9 end" << endl;
 #endif
