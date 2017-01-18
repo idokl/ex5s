@@ -101,12 +101,18 @@ void Driver::moveOneStep() {
 
 //communicate with the server
 void Driver::run(Socket *socket) {
-    char buffer[20000];
+    string reciveNotification;
+    char buffer[100000];
     stringstream ss;
     ss << this->id;
     socket->sendData(ss.str(), 0);
+    do {
+        socket->reciveData(buffer, sizeof(buffer), 0);
+        reciveNotification = string(buffer);
+    }while(!strcmp(reciveNotification,"recive"));
 
     socket->reciveData(buffer, sizeof(buffer), 0);
+    socket->sendData("recive", 0);
     string cabDataString = string(buffer);
     cabOfDriver = CabFactory::createCab(cabDataString);
 
@@ -114,17 +120,9 @@ void Driver::run(Socket *socket) {
     Trip *trip = NULL;
     while (true) {
         socket->reciveData(buffer, sizeof(buffer), 0);
+        socket->sendData("recive", 0);
         string numberOfOption = string(buffer);
         switch (stoi(numberOfOption)) {
-            case 4: {
-                //serialization:
-                SerializationClass<Point> serializeClass;
-                string serializedPointStr =
-                        serializeClass.serializationObject(this->currentPlace());
-                //pass point to server
-                socket->sendData(serializedPointStr, 0);
-                break;
-            }
             case 7: {
 #ifdef debugMassagesDriver
                 cout << "Driver: case7" << endl;
@@ -145,6 +143,10 @@ void Driver::run(Socket *socket) {
                         serializeClass.serializationObject(this->currentPlace());
                 //pass point to server
                 socket->sendData(serializedPointStr, 0);
+                do {
+                    socket->reciveData(buffer, sizeof(buffer), 0);
+                    reciveNotification = string(buffer);
+                }while(!strcmp(reciveNotification,"recive"));
 #ifdef debugMassagesDriver
                 cout << "Driver: case9 end" << endl;
 #endif
@@ -157,6 +159,7 @@ void Driver::run(Socket *socket) {
 #endif
                 memset(buffer, 0, sizeof(buffer));
                 socket->reciveData(buffer, sizeof(buffer),0);
+                socket->sendData("recive", 0);
                 string strTrip(buffer, sizeof(buffer));
                 SerializationClass<Trip *> serializeTripClass;
                 trip = serializeTripClass.deSerializationObject(strTrip, trip);

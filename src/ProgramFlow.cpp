@@ -30,16 +30,8 @@ void *ProgramFlow::threadsRun(void* threadStruct) {
     Socket *socket = threadData->socket;
     TaxiCenter *taxiCenter = threadData->taxiCenter;
 
-    char buffer[20000];
-/*
-    socket->reciveData(buffer, sizeof(buffer), socketDescriptor);
-    string driverIdString = string(buffer);
-    threadData->id = stoi(driverIdString);
-    //send taxi data
-    string dataOfCabOfDriver = taxiCenter->getCabString(threadData->id);
-    socket->sendData(dataOfCabOfDriver, socketDescriptor);
-*/
-    int numOfClients = taxiCenter->getNumOfDrivers();
+    char buffer[100000];
+
     while (true) {
             //circleFinish=0;
             switch (globalX) {
@@ -121,8 +113,7 @@ void *ProgramFlow::threadsRun(void* threadStruct) {
                     cout << "secondary thread: (socket descriptor: " << socketDescriptor << "): I did: circleFinish--. now circleFinish = " << circleFinish << endl;
 #endif
                     pthread_mutex_unlock(&circleFinishMutex);
-                    //runOnce = 1;
-                    //circleFinish++;
+
                     break;
                 }
                 default:
@@ -139,7 +130,8 @@ void *ProgramFlow::threadsRun(void* threadStruct) {
 
 void ProgramFlow::run(Socket *mainSocket) {
     string reciveNotification;
-    char buffer[20000];
+
+    char buffer[100000];
 
     string inputString;
     //get the grid dimensions
@@ -278,10 +270,13 @@ void ProgramFlow::run(Socket *mainSocket) {
 #ifdef debugMassagesProgramFlow
                 cout << "main thread: case9 begin. current time: " << taxiCenter.getTimer() << endl;
 #endif
+                circleFinish = expectedNumberOfDrivers;
+
+
                 globalX = 9;
 
                 while (true) {
-                    sleep(0.1);
+                    sleep(0.01);
                     if (circleFinish == 0)
                         break;
                 }
