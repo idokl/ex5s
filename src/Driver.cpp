@@ -107,24 +107,18 @@ void Driver::run(Socket *socket) {
     ss << this->id;
     socket->sendData(ss.str(), 0);
     memset(buffer, 0, sizeof(buffer));
-    do {
-        socket->reciveData(buffer, sizeof(buffer), 0);
-        reciveNotification = string(buffer);
-    }while(!(reciveNotification == "recive"));
-
     memset(buffer, 0, sizeof(buffer));
     socket->reciveData(buffer, sizeof(buffer), 0);
-    socket->sendData("recive", 0);
     string cabDataString = string(buffer);
     cabOfDriver = CabFactory::createCab(cabDataString);
-
+    socket->sendData("thanks to Nevo", 0);
     memset(buffer, 0, sizeof(buffer));
-
     Trip *trip = NULL;
     while (true) {
         memset(buffer, 0, sizeof(buffer));
         socket->reciveData(buffer, sizeof(buffer), 0);
-        socket->sendData("recive", 0);
+
+
         string numberOfOption = string(buffer);
         switch (stoi(numberOfOption)) {
             case 7: {
@@ -148,10 +142,6 @@ void Driver::run(Socket *socket) {
                 //pass point to server
                 socket->sendData(serializedPointStr, 0);
                 memset(buffer, 0, sizeof(buffer));
-                do {
-                    socket->reciveData(buffer, sizeof(buffer), 0);
-                    reciveNotification = string(buffer);
-                }while(!(reciveNotification == "recive"));
 #ifdef debugMassagesDriver
                 cout << "Driver: case9 end" << endl;
 #endif
@@ -162,9 +152,10 @@ void Driver::run(Socket *socket) {
 #ifdef debugMassagesDriver
                 cout << "Driver: case10 (receiving trip) begin" << endl;
 #endif
+                socket->sendData("thanks to Nevo", 0);
                 memset(buffer, 0, sizeof(buffer));
                 socket->reciveData(buffer, sizeof(buffer),0);
-                socket->sendData("recive", 0);
+                socket->sendData("thanks to Nevo", 0);
                 string strTrip(buffer, sizeof(buffer));
                 SerializationClass<Trip *> serializeTripClass;
                 trip = serializeTripClass.deSerializationObject(strTrip, trip);

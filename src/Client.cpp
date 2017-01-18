@@ -10,8 +10,6 @@ int main(int argc, char *argv[]) {
         int port = atoi(argv[2]);
         // 0: isServer = false,
         // port: port of the client
-        socket = new Tcp(0, port, argv[1]);
-        socket->initialize();
 
         InputParsing inputParsing = InputParsing();
         string inputString;
@@ -19,6 +17,8 @@ int main(int argc, char *argv[]) {
         //                                              - (int,int,char:{S,M,D,W},int,int)
         getline(cin, inputString);
         InputParsing::parsedDriverData driverData = inputParsing.parseDriverData(inputString);
+        socket = new Tcp(0, port, argv[1]);
+        socket->initialize();
         try {
             Driver driver = Driver(driverData.id, driverData.age, driverData.status, driverData.yearsOfExperience,
                                    driverData.vehicleId);
