@@ -22,6 +22,7 @@ Graph<Point> *ProgramFlow::createGrid(int width, int height, vector<Point> listO
 
 
 void *ProgramFlow::threadsRun(void* threadStruct) {
+    string reciveNotification;
     int timeOfTheLastAction = -1;
     string inputString;
     threadData *threadData = (struct threadData *) threadStruct;
@@ -61,10 +62,22 @@ void *ProgramFlow::threadsRun(void* threadStruct) {
                                 taxiCenter->getListOfTrips().at(i)->getStartingPoint()) {
                                 //option 10 (of driver): assign a trip to the driver
                                 socket->sendData("10", socketDescriptor);
+
+                                do {
+                                    socket->reciveData(buffer, sizeof(buffer), 0);
+                                    reciveNotification = string(buffer);
+                                } while (!strcmp(reciveNotification,"recive"));
+
                                 SerializationClass<Trip *> serializeClass;
                                 string serializedTrip = serializeClass.serializationObject(
                                         taxiCenter->getListOfTrips().at(i));
                                 socket->sendData(serializedTrip, socketDescriptor);
+
+                                do {
+                                    socket->reciveData(buffer, sizeof(buffer), 0);
+                                    reciveNotification = string(buffer);
+                                } while (!strcmp(reciveNotification,"recive"));
+
                                 delete taxiCenter->getListOfTrips().at(i);
                                 taxiCenter->deleteTrip(i);
 #ifdef debugMassagesProgramFlow
@@ -80,7 +93,13 @@ void *ProgramFlow::threadsRun(void* threadStruct) {
                         //sending 9 in order to advance the driver one step
                         socket->sendData("9", socketDescriptor);
 
+                        do {
+                            socket->reciveData(buffer, sizeof(buffer), 0);
+                            reciveNotification = string(buffer);
+                        } while (!strcmp(reciveNotification,"recive"));
+
                         socket->reciveData(buffer, sizeof(buffer), socketDescriptor);
+                        socket->sendData("recive",0);
                         string locationStr(buffer, sizeof(buffer));
                         Point driverLocation;
                         SerializationClass<Point> serializeClass;
@@ -119,7 +138,7 @@ void *ProgramFlow::threadsRun(void* threadStruct) {
 
 
 void ProgramFlow::run(Socket *mainSocket) {
-
+    string reciveNotification;
     char buffer[20000];
 
     string inputString;
@@ -172,11 +191,17 @@ void ProgramFlow::run(Socket *mainSocket) {
                         globalX =1;
 /**/
                         mainSocket->reciveData(buffer, sizeof(buffer), descriptor);
+                        mainSocket->sendData("recive",0);
                         string driverIdString = string(buffer);
                         threadData->id = stoi(driverIdString);
                         //send taxi data
                         string dataOfCabOfDriver = taxiCenter.getCabString(threadData->id);
                         mainSocket->sendData(dataOfCabOfDriver, descriptor);
+
+                        do {
+                            mainSocket->reciveData(buffer, sizeof(buffer), 0);
+                            reciveNotification = string(buffer);
+                        } while (!strcmp(reciveNotification,"recive"));
 /**/
                         threadData->socket = mainSocket;
                         threadData->socketDescriptor = descriptor;
@@ -247,12 +272,12 @@ void ProgramFlow::run(Socket *mainSocket) {
                 exit(0);
             }
             case 9: {
-#ifdef debugMassagesProgramFlow
-                cout << "main thread: case9 begin. current time: " << taxiCenter.getTimer() << endl;
-#endif
                 circleFinish = expectedNumberOfDrivers;
 
                 taxiCenter.setTimer();
+#ifdef debugMassagesProgramFlow
+                cout << "main thread: case9 begin. current time: " << taxiCenter.getTimer() << endl;
+#endif
                 globalX = 9;
 
                 while (true) {
