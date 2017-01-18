@@ -23,21 +23,24 @@ Graph<Point> *ProgramFlow::createGrid(int width, int height, vector<Point> listO
 
 
 void *ProgramFlow::threadsRun(void* threadStruct) {
+    bool loopCondition = true;
     string reciveNotification;
     int timeOfTheLastAction = -1;
     string inputString;
     threadData *threadData = (struct threadData *) threadStruct;
     int socketDescriptor = threadData->socketDescriptor;
+    int id = threadData->id;
     Socket *socket = threadData->socket;
     TaxiCenter *taxiCenter = threadData->taxiCenter;
 
     char buffer[100000];
 
-    while (true) {
+    while (loopCondition) {
             //circleFinish=0;
             switch (globalX) {
                 case 7: {
-                    exit(0);
+                    delete threadData;
+                    loopCondition = false;
                 }
                 case 9: {
                     if (timeOfTheLastAction == taxiCenter->getTimer()) {
@@ -129,6 +132,9 @@ void ProgramFlow::run(Socket *mainSocket) {
     int numOfObstacles;
     numOfObstacles = stoi(inputString);
     vector<Point> listOfObstacles = vector<Point>();
+    //list<pthread_t> listOfThreads();
+/**/
+    vector<pthread_t> pthreadVector = vector<pthread_t>();
     pthread_mutex_init(&listOfTripsMutex, 0);
     pthread_mutex_init(&driverLocationsMapMutex, 0);
     pthread_mutex_init(&circleFinishMutex, 0);
@@ -148,8 +154,7 @@ void ProgramFlow::run(Socket *mainSocket) {
     Cab *cabForDriver = NULL;
     int expectedNumberOfDrivers = 0;
     //int timer = 0;
-    threadData * threadDataStruct = new struct threadData;
-    vector<threadData*> listOfStructs;
+
     while (true) {
         //get number of option and do the defined operation
         getline(cin, inputString);
@@ -182,12 +187,15 @@ void ProgramFlow::run(Socket *mainSocket) {
 #ifdef debugMassagesProgramFlow
                         cout << "main thread: case1 recived driverId" << endl;
 #endif
+                        threadData * threadDataStruct = new struct threadData;
                         string driverIdString = string(buffer);
                         threadDataStruct->id = stoi(driverIdString);
                         //send taxi data
 #ifdef debugMassagesProgramFlow
                         cout << "main thread: case1 before checking and sending cabString" << endl;
 #endif
+
+                        //vector<threadData*> *listOfStructs = new vector<threadData*>();
                         string dataOfCabOfDriver = taxiCenter.getCabString(threadDataStruct->id);
 //                        mainSocket->reciveData(buffer, sizeof(buffer), descriptor);
                         mainSocket->sendData(dataOfCabOfDriver, descriptor);
@@ -195,18 +203,22 @@ void ProgramFlow::run(Socket *mainSocket) {
 /**/                    threadDataStruct->socket = mainSocket;
                         threadDataStruct->socketDescriptor = descriptor;
                         threadDataStruct->taxiCenter = &taxiCenter;
-                        listOfStructs.push_back(threadDataStruct);
+                        //listOfStructs->push_back(threadDataStruct);
+                        pthread_t pthread;
 
                         mainSocket->reciveData(buffer, sizeof(buffer), descriptor); //recive "thanks to Nevo"
+                        //pthread_t pthread;
+                        pthread_create(&pthread, NULL, ProgramFlow::threadsRun, threadDataStruct);
+                        pthreadVector.push_back(pthread);
 
 #ifdef debugMassagesProgramFlow
                         cout << "main thread: case1 - END OF ITERATION OF THE LOOP" << endl;
 #endif
                     }
-                    for (unsigned long i = 0; i <expectedNumberOfDrivers; i++){
-                        pthread_t pthread;
-                        pthread_create(&pthread, NULL, ProgramFlow::threadsRun, listOfStructs.at(i));
-                    }
+//                    for (unsigned long i = 0; i <expectedNumberOfDrivers; i++){
+//                        pthread_t pthread;
+//                        pthread_create(&pthread, NULL, ProgramFlow::threadsRun, listOfStructs.at(i));
+//                    }
                 }
 #ifdef debugMassagesProgramFlow
                 cout << "main thread: case1 end" << endl;
@@ -259,6 +271,13 @@ void ProgramFlow::run(Socket *mainSocket) {
                 break;
             }
             case 7: {
+
+
+                for(unsigned long i = 0; i<pthreadVector.size(); i++){
+                    pthread_join(pthreadVector.at(i), NULL);
+                }
+                //pthread_join(pthread, NULL);
+                sleep(1);
 #ifdef debugMassagesProgramFlow
                 cout << "main thread: case7" << endl;
 #endif
@@ -278,11 +297,9 @@ void ProgramFlow::run(Socket *mainSocket) {
                 circleFinish = expectedNumberOfDrivers;
                 globalX = 9;
 
-                while (true) {
-                    sleep(0.01);
-                    if (circleFinish == 0)
-                        break;
-                }
+                do {
+                } while (circleFinish !=0);
+
 #ifdef debugMassagesProgramFlow
                 cout << "main thread: case9 end" << endl;
 #endif

@@ -107,7 +107,6 @@ void Driver::run(Socket *socket) {
     ss << this->id;
     socket->sendData(ss.str(), 0);
     memset(buffer, 0, sizeof(buffer));
-    memset(buffer, 0, sizeof(buffer));
     socket->reciveData(buffer, sizeof(buffer), 0);
     string cabDataString = string(buffer);
     cabOfDriver = CabFactory::createCab(cabDataString);
