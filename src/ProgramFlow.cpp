@@ -147,6 +147,9 @@ void ProgramFlow::run(Socket *mainSocket) {
     int numOfObstacles;
     numOfObstacles = stoi(inputString);
     vector<Point> listOfObstacles = vector<Point>();
+    pthread_mutex_init(&listOfTripsMutex, 0);
+    pthread_mutex_init(&driverLocationsMapMutex, 0);
+    pthread_mutex_init(&circleFinishMutex, 0);
     //if there are any obstacles, get their locations.
     if (numOfObstacles > 0) {
         for (int i = 0; i < numOfObstacles; i++) {
@@ -162,7 +165,8 @@ void ProgramFlow::run(Socket *mainSocket) {
     Cab *cabForDriver = NULL;
     int expectedNumberOfDrivers = 0;
     //int timer = 0;
-    threadData * threadData = new struct threadData;
+    threadData * threadDataStruct = new struct threadData;
+    vector<threadData*> listOfStructs;
     while (true) {
         //get number of option and do the defined operation
         getline(cin, inputString);
@@ -182,17 +186,17 @@ void ProgramFlow::run(Socket *mainSocket) {
                     break;
                 } else {
 //                    circleFinish = expectedNumberOfDrivers;
-                    for(unsigned int i=0; i<expectedNumberOfDrivers; i++){
+                    for (unsigned int i = 0; i < expectedNumberOfDrivers; i++) {
                         int descriptor = ProgramFlow::acceptConnection(mainSocket);
-                        globalX =1;
+                        globalX = 1;
 /**/
                         memset(buffer, 0, sizeof(buffer));
                         mainSocket->reciveData(buffer, sizeof(buffer), descriptor);
-                        mainSocket->sendData("recive",descriptor);
+                        mainSocket->sendData("recive", descriptor);
                         string driverIdString = string(buffer);
-                        threadData->id = stoi(driverIdString);
+                        threadDataStruct->id = stoi(driverIdString);
                         //send taxi data
-                        string dataOfCabOfDriver = taxiCenter.getCabString(threadData->id);
+                        string dataOfCabOfDriver = taxiCenter.getCabString(threadDataStruct->id);
                         mainSocket->sendData(dataOfCabOfDriver, descriptor);
                         memset(buffer, 0, sizeof(buffer));
 
@@ -200,16 +204,16 @@ void ProgramFlow::run(Socket *mainSocket) {
                             mainSocket->reciveData(buffer, sizeof(buffer), descriptor);
                             reciveNotification = string(buffer);
                         } while (!(reciveNotification == "recive"));
-/**/
-                        threadData->socket = mainSocket;
-                        threadData->socketDescriptor = descriptor;
-                        threadData->taxiCenter = &taxiCenter;
-                        pthread_mutex_init(&listOfTripsMutex, 0);
-                        pthread_mutex_init(&driverLocationsMapMutex, 0);
-                        pthread_mutex_init(&circleFinishMutex, 0);
+/**/                    threadDataStruct->socket = mainSocket;
+                        threadDataStruct->socketDescriptor = descriptor;
+                        threadDataStruct->taxiCenter = &taxiCenter;
+                        listOfStructs.push_back(threadDataStruct);
+                    }
+                    for (unsigned long i = 0; i <expectedNumberOfDrivers; i++){
                         pthread_t pthread;
-                        pthread_create(&pthread, NULL, ProgramFlow::threadsRun, threadData);
-                   }
+                        pthread_create(&pthread, NULL, ProgramFlow::threadsRun, listOfStructs.at(i));
+                    }
+
                 }
 #ifdef debugMassagesProgramFlow
                 cout << "main thread: case1 end" << endl;
@@ -302,8 +306,9 @@ int ProgramFlow::acceptConnection(Socket *socket) {
         struct sockaddr_in client_sin;
         unsigned int addr_len;
         addr_len = sizeof(client_sin);
-        cout << "accept" << endl;
         int descriptor = accept(socket->getSocketDescriptor(),
                                 (struct sockaddr *) &client_sin, &addr_len);
-        return descriptor;
+        cout << "accept descriptor number" << descriptor << endl;
+
+    return descriptor;
 }
