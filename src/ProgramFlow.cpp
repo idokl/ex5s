@@ -54,7 +54,7 @@ void *ProgramFlow::threadsRun(void* threadStruct) {
                                 taxiCenter->getListOfTrips().at(i)->getStartingPoint()) {
                                 //option 10 (of driver): assign a trip to the driver
                                 socket->sendData("10", socketDescriptor);
-
+                                memset(buffer, 0, sizeof(buffer));
                                 do {
                                     socket->reciveData(buffer, sizeof(buffer), socketDescriptor);
                                     reciveNotification = string(buffer);
@@ -64,6 +64,7 @@ void *ProgramFlow::threadsRun(void* threadStruct) {
                                 string serializedTrip = serializeClass.serializationObject(
                                         taxiCenter->getListOfTrips().at(i));
                                 socket->sendData(serializedTrip, socketDescriptor);
+                                memset(buffer, 0, sizeof(buffer));
 
                                 do {
                                     socket->reciveData(buffer, sizeof(buffer), socketDescriptor);
@@ -84,11 +85,14 @@ void *ProgramFlow::threadsRun(void* threadStruct) {
                     if (assignFlag == 0) {
                         //sending 9 in order to advance the driver one step
                         socket->sendData("9", socketDescriptor);
+                        memset(buffer, 0, sizeof(buffer));
 
                         do {
                             socket->reciveData(buffer, sizeof(buffer), socketDescriptor);
                             reciveNotification = string(buffer);
                         } while (!(reciveNotification == "recive"));
+
+                        memset(buffer, 0, sizeof(buffer));
 
                         socket->reciveData(buffer, sizeof(buffer), socketDescriptor);
                         socket->sendData("recive",socketDescriptor);
@@ -182,6 +186,7 @@ void ProgramFlow::run(Socket *mainSocket) {
                         int descriptor = ProgramFlow::acceptConnection(mainSocket);
                         globalX =1;
 /**/
+                        memset(buffer, 0, sizeof(buffer));
                         mainSocket->reciveData(buffer, sizeof(buffer), descriptor);
                         mainSocket->sendData("recive",descriptor);
                         string driverIdString = string(buffer);
@@ -189,6 +194,7 @@ void ProgramFlow::run(Socket *mainSocket) {
                         //send taxi data
                         string dataOfCabOfDriver = taxiCenter.getCabString(threadData->id);
                         mainSocket->sendData(dataOfCabOfDriver, descriptor);
+                        memset(buffer, 0, sizeof(buffer));
 
                         do {
                             mainSocket->reciveData(buffer, sizeof(buffer), descriptor);
