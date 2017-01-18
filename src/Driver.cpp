@@ -106,19 +106,23 @@ void Driver::run(Socket *socket) {
     stringstream ss;
     ss << this->id;
     socket->sendData(ss.str(), 0);
+    memset(buffer, 0, sizeof(buffer));
     do {
         socket->reciveData(buffer, sizeof(buffer), 0);
         reciveNotification = string(buffer);
     }while(!(reciveNotification == "recive"));
 
+    memset(buffer, 0, sizeof(buffer));
     socket->reciveData(buffer, sizeof(buffer), 0);
     socket->sendData("recive", 0);
     string cabDataString = string(buffer);
     cabOfDriver = CabFactory::createCab(cabDataString);
 
     memset(buffer, 0, sizeof(buffer));
+
     Trip *trip = NULL;
     while (true) {
+        memset(buffer, 0, sizeof(buffer));
         socket->reciveData(buffer, sizeof(buffer), 0);
         socket->sendData("recive", 0);
         string numberOfOption = string(buffer);
@@ -143,6 +147,7 @@ void Driver::run(Socket *socket) {
                         serializeClass.serializationObject(this->currentPlace());
                 //pass point to server
                 socket->sendData(serializedPointStr, 0);
+                memset(buffer, 0, sizeof(buffer));
                 do {
                     socket->reciveData(buffer, sizeof(buffer), 0);
                     reciveNotification = string(buffer);
