@@ -7,6 +7,7 @@
 #include "Socket.h"
 #include "SerializationClass.h"
 #include "CabFactory.h"
+#include <string.h>
 
 
 //typedef enum {SINGLE, MARRIED, DIVORCED, WIDOWED} Status_Of_Marriage;

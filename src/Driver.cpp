@@ -109,7 +109,7 @@ void Driver::run(Socket *socket) {
     do {
         socket->reciveData(buffer, sizeof(buffer), 0);
         reciveNotification = string(buffer);
-    }while(!strcmp(reciveNotification,"recive"));
+    }while(!(reciveNotification == "recive"));
 
     socket->reciveData(buffer, sizeof(buffer), 0);
     socket->sendData("recive", 0);
@@ -146,7 +146,7 @@ void Driver::run(Socket *socket) {
                 do {
                     socket->reciveData(buffer, sizeof(buffer), 0);
                     reciveNotification = string(buffer);
-                }while(!strcmp(reciveNotification,"recive"));
+                }while(!(reciveNotification == "recive"));
 #ifdef debugMassagesDriver
                 cout << "Driver: case9 end" << endl;
 #endif

@@ -56,9 +56,9 @@ void *ProgramFlow::threadsRun(void* threadStruct) {
                                 socket->sendData("10", socketDescriptor);
 
                                 do {
-                                    socket->reciveData(buffer, sizeof(buffer), 0);
+                                    socket->reciveData(buffer, sizeof(buffer), socketDescriptor);
                                     reciveNotification = string(buffer);
-                                } while (!strcmp(reciveNotification,"recive"));
+                                } while (!(reciveNotification == "recive"));
 
                                 SerializationClass<Trip *> serializeClass;
                                 string serializedTrip = serializeClass.serializationObject(
@@ -66,9 +66,9 @@ void *ProgramFlow::threadsRun(void* threadStruct) {
                                 socket->sendData(serializedTrip, socketDescriptor);
 
                                 do {
-                                    socket->reciveData(buffer, sizeof(buffer), 0);
+                                    socket->reciveData(buffer, sizeof(buffer), socketDescriptor);
                                     reciveNotification = string(buffer);
-                                } while (!strcmp(reciveNotification,"recive"));
+                                } while (!(reciveNotification == "recive"));
 
                                 delete taxiCenter->getListOfTrips().at(i);
                                 taxiCenter->deleteTrip(i);
@@ -86,12 +86,12 @@ void *ProgramFlow::threadsRun(void* threadStruct) {
                         socket->sendData("9", socketDescriptor);
 
                         do {
-                            socket->reciveData(buffer, sizeof(buffer), 0);
+                            socket->reciveData(buffer, sizeof(buffer), socketDescriptor);
                             reciveNotification = string(buffer);
-                        } while (!strcmp(reciveNotification,"recive"));
+                        } while (!(reciveNotification == "recive"));
 
                         socket->reciveData(buffer, sizeof(buffer), socketDescriptor);
-                        socket->sendData("recive",0);
+                        socket->sendData("recive",socketDescriptor);
                         string locationStr(buffer, sizeof(buffer));
                         Point driverLocation;
                         SerializationClass<Point> serializeClass;
@@ -183,7 +183,7 @@ void ProgramFlow::run(Socket *mainSocket) {
                         globalX =1;
 /**/
                         mainSocket->reciveData(buffer, sizeof(buffer), descriptor);
-                        mainSocket->sendData("recive",0);
+                        mainSocket->sendData("recive",descriptor);
                         string driverIdString = string(buffer);
                         threadData->id = stoi(driverIdString);
                         //send taxi data
@@ -191,9 +191,9 @@ void ProgramFlow::run(Socket *mainSocket) {
                         mainSocket->sendData(dataOfCabOfDriver, descriptor);
 
                         do {
-                            mainSocket->reciveData(buffer, sizeof(buffer), 0);
+                            mainSocket->reciveData(buffer, sizeof(buffer), descriptor);
                             reciveNotification = string(buffer);
-                        } while (!strcmp(reciveNotification,"recive"));
+                        } while (!(reciveNotification == "recive"));
 /**/
                         threadData->socket = mainSocket;
                         threadData->socketDescriptor = descriptor;

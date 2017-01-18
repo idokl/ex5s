@@ -2,7 +2,7 @@
 #define EX1_VERSION_1_1_PROGRAMFLOW_H
 
 #include <vector>
-#include <string>
+
 #include <iostream>
 #include "Point.h"
 #include "Grid.h"
@@ -14,6 +14,7 @@
 #include "CabFactory.h"
 #include "SerializationClass.h"
 #include <pthread.h>
+#include <string.h>
 
 /*
  * This class manage the flow of the program.
