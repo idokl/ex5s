@@ -24,6 +24,7 @@ private:
     BfsAlgorithm<Point> bfsInstance;
     stack <Node<Point>> nextPointsOfPath;
     int timer;
+    vector<map<int,Point>> listOfArrivedDrivers;
 public:
 
     TaxiCenter();
@@ -71,6 +72,8 @@ public:
     int getTimer();
 
     int getNumOfDrivers();
+
+    void addDriverToListOfArrivedDrivers();
 
     void setTimer();
     //destructor

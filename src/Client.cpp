@@ -1,6 +1,8 @@
 #include <string>
 #include "ProgramFlow.h"
 #include "Tcp.h"
+#include "easylogging++.h"
+_INITIALIZE_EASYLOGGINGPP
 
 using namespace std;
 
@@ -19,6 +21,7 @@ int main(int argc, char *argv[]) {
         InputParsing::parsedDriverData driverData = inputParsing.parseDriverData(inputString);
         socket = new Tcp(0, port, argv[1]);
         socket->initialize();
+        LINFO << "Client initialized";
         try {
             Driver driver = Driver(driverData.id, driverData.age, driverData.status, driverData.yearsOfExperience,
                                    driverData.vehicleId);

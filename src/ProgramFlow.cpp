@@ -1,5 +1,3 @@
-//#define debugMassagesProgramFlow
-
 #include "ProgramFlow.h"
 
 using namespace std;
@@ -29,14 +27,15 @@ void *ProgramFlow::threadsRun(void* threadStruct) {
     string inputString;
     threadData *threadData = (struct threadData *) threadStruct;
     int socketDescriptor = threadData->socketDescriptor;
-    int id = threadData->id;
+    int driverId = threadData->id;
     Socket *socket = threadData->socket;
     TaxiCenter *taxiCenter = threadData->taxiCenter;
-
+    bool arrived = false;
+    Point arrivedPoint(0,0);
     char buffer[100000];
 
     while (loopCondition) {
-            //circleFinish=0;
+
             switch (globalX) {
                 case 7: {
                     socket->sendData("7", socketDescriptor);
@@ -55,8 +54,10 @@ void *ProgramFlow::threadsRun(void* threadStruct) {
                     for (unsigned int i = 0; i < taxiCenter->getListOfTrips().size(); i++) {
                         if (taxiCenter->getListOfTrips().at(i)->getTime() ==
                             taxiCenter->getTimer()) {
-                            if (taxiCenter->getDriverLocation(threadData->id) ==
+                            if (taxiCenter->getDriverLocation(driverId) ==
                                 taxiCenter->getListOfTrips().at(i)->getStartingPoint()) {
+                                //if(arrived)
+                                arrivedPoint = taxiCenter->getListOfTrips().at(i)->getEndingPoint();
                                 //option 10 (of driver): assign a trip to the driver
                                 socket->sendData("10", socketDescriptor);
                                 memset(buffer, 0, sizeof(buffer));
@@ -69,9 +70,7 @@ void *ProgramFlow::threadsRun(void* threadStruct) {
                                 socket->reciveData(buffer, sizeof(buffer), socketDescriptor); //recive "thanks to Nevo"
                                 delete taxiCenter->getListOfTrips().at(i);
                                 taxiCenter->deleteTrip(i);
-#ifdef debugMassagesProgramFlow
-                                cout << "secondary thread: (socket descriptor: " << socketDescriptor << "): trip was sent to the client" << endl;
-#endif
+                                LINFO << "secondary thread: (socket descriptor: " << socketDescriptor << "): trip was sent to the client";
                                 assignFlag = 1;
                                 break;
                             }
@@ -88,20 +87,22 @@ void *ProgramFlow::threadsRun(void* threadStruct) {
                         SerializationClass<Point> serializeClass;
                         driverLocation =
                                 serializeClass.deSerializationObject(locationStr, driverLocation);
+                        if(driverLocation == arrivedPoint){
+                            arrived = true;
+                        }
                         pthread_mutex_lock(&driverLocationsMapMutex);
-                        taxiCenter->addDriverLocation(threadData->id, driverLocation);
+                        taxiCenter->addDriverLocation(driverId, driverLocation);
+                        if(arrived){
+                            taxiCenter->addDriverToListOfArrivedDrivers();
+                        }
                         pthread_mutex_unlock(&driverLocationsMapMutex);
-#ifdef debugMassagesProgramFlow
-                        cout << "secondary thread: (socket descriptor: " << socketDescriptor << "): 9 was sent to the client" << endl;
-                        cout << "secondary thread: (socket descriptor: " << socketDescriptor << "): the point " << driverLocation << " was received from the client" << endl;
-#endif
+                      //  LINFO << "secondary thread: (socket descriptor: " << socketDescriptor << "): 9 was sent to the client";
+                        LINFO << "secondary thread: (socket descriptor: " << socketDescriptor << "): the point " << driverLocation << " was received from the client";
                     }
                     timeOfTheLastAction = taxiCenter->getTimer();
                     pthread_mutex_lock(&circleFinishMutex);
                     circleFinish--;
-#ifdef debugMassagesProgramFlow
-                    cout << "secondary thread: (socket descriptor: " << socketDescriptor << "): I did: circleFinish--. now circleFinish = " << circleFinish << endl;
-#endif
+                    LINFO << "secondary thread: (socket descriptor: " << socketDescriptor << "): I did: circleFinish--. now circleFinish = " << circleFinish;
                     pthread_mutex_unlock(&circleFinishMutex);
 
                     break;
@@ -111,6 +112,7 @@ void *ProgramFlow::threadsRun(void* threadStruct) {
 
         }
     }
+    return NULL;
 }
 
 
@@ -133,8 +135,7 @@ void ProgramFlow::run(Socket *mainSocket) {
     int numOfObstacles;
     numOfObstacles = stoi(inputString);
     vector<Point> listOfObstacles = vector<Point>();
-    //list<pthread_t> listOfThreads();
-/**/
+    vector<struct threadData*> listOfStructs = vector<threadData*>();
     vector<pthread_t> pthreadVector = vector<pthread_t>();
     pthread_mutex_init(&listOfTripsMutex, 0);
     pthread_mutex_init(&driverLocationsMapMutex, 0);
@@ -158,14 +159,10 @@ void ProgramFlow::run(Socket *mainSocket) {
     while (true) {
         //get number of option and do the defined operation
         getline(cin, inputString);
-#ifdef debugMassagesProgramFlow
-        cout << inputString << endl;
-#endif
+        LINFO << inputString;
         switch (stoi(inputString)) {
             case 1: {
-#ifdef debugMassagesProgramFlow
-                cout << "main thread: case1 begin" << endl;
-#endif
+                LINFO << "main thread: case1 begin";
                 //create a driver (according to the given parameters) and add it to the taxi center
                 getline(cin, inputString);
                 expectedNumberOfDrivers = stoi(inputString);
@@ -173,30 +170,23 @@ void ProgramFlow::run(Socket *mainSocket) {
                     break;
                 } else {
                     for (unsigned int i = 0; i < expectedNumberOfDrivers; i++) {
-#ifdef debugMassagesProgramFlow
-                        cout << "main thread: case1 before accept" << endl;
-#endif
+                        LINFO << "main thread: case1 before accept";
                         int descriptor = ProgramFlow::acceptConnection(mainSocket);
-#ifdef debugMassagesProgramFlow
-                        cout << "main thread: case1 after accept" << endl;
-#endif
+                        LINFO << "main thread: case1 after accept";
                         memset(buffer, 0, sizeof(buffer));
                         mainSocket->reciveData(buffer, sizeof(buffer), descriptor);
-#ifdef debugMassagesProgramFlow
-                        cout << "main thread: case1 recived driverId" << endl;
-#endif
+                        LINFO << "main thread: case1 recived driverId";
                         threadData * threadDataStruct = new struct threadData;
+                        listOfStructs.push_back(threadDataStruct);
                         string driverIdString = string(buffer);
                         threadDataStruct->id = stoi(driverIdString);
                         //send taxi data
-#ifdef debugMassagesProgramFlow
-                        cout << "main thread: case1 before checking and sending cabString" << endl;
-#endif
+                        LINFO << "main thread: case1 before checking and sending cabString";
 
                         string dataOfCabOfDriver = taxiCenter.getCabString(threadDataStruct->id);
                         mainSocket->sendData(dataOfCabOfDriver, descriptor);
                         memset(buffer, 0, sizeof(buffer));
-/**/                    threadDataStruct->socket = mainSocket;
+                        threadDataStruct->socket = mainSocket;
                         threadDataStruct->socketDescriptor = descriptor;
                         threadDataStruct->taxiCenter = &taxiCenter;
                         pthread_t pthread;
@@ -205,34 +195,24 @@ void ProgramFlow::run(Socket *mainSocket) {
                         pthread_create(&pthread, NULL, ProgramFlow::threadsRun, threadDataStruct);
                         pthreadVector.push_back(pthread);
 
-#ifdef debugMassagesProgramFlow
-                        cout << "main thread: case1 - END OF ITERATION OF THE LOOP" << endl;
-#endif
+                        LINFO << "main thread: case1 - END OF ITERATION OF THE LOOP";
                     }
 
                 }
-#ifdef debugMassagesProgramFlow
-                cout << "main thread: case1 end" << endl;
-#endif
+                LINFO << "main thread: case1 end";
                 break;
             }
             case 2: {
-#ifdef debugMassagesProgramFlow
-                cout << "main thread: case2 begin" << endl;
-#endif
+                LINFO << "main thread: case2 begin";
                 //create a trip (according to the given parameters) and add it to the taxi center
                 getline(cin, inputString);
                 InputParsing::parsedTripData trip = inputParsing.parseTripData(inputString);
                 taxiCenter.createTrip(trip);
-#ifdef debugMassagesProgramFlow
-                cout << "main thread: case2 end" << endl;
-#endif
+                LINFO << "main thread: case2 end";
                 break;
             }
             case 3: {
-#ifdef debugMassagesProgramFlow
-                cout << "main thread: case3 begin" << endl;
-#endif
+                LINFO << "main thread: case3 begin";
                 //create a cab (according to the given parameters) and add it to the taxi center
                 //save string of parameters in the taxi center in order to pass it to the
                 //corresponding driver afterwards.
@@ -240,25 +220,18 @@ void ProgramFlow::run(Socket *mainSocket) {
                 cabForDriver = CabFactory::createCab(inputString);
                 taxiCenter.addCab(cabForDriver);
                 taxiCenter.addCabString(cabForDriver->getId(), inputString);
-#ifdef debugMassagesProgramFlow
-                cout << "main thread: case3 end" << endl;
-#endif
+                LINFO << "main thread: case3 end";
                 break;
             }
             case 4: {
-#ifdef debugMassagesProgramFlow
-                cout << "main thread: case4 begin" << endl;
-#endif
+                LINFO << "main thread: case4 begin";
                 //query about the location of a specific driver
                 getline(cin, inputString);
                 int id = stoi(inputString);
-                //pthread_mutex_lock(&driverLocationsMapMutex);
                 Point location = taxiCenter.getDriverLocation(id);
-                //pthread_mutex_unlock(&driverLocationsMapMutex);
-                cout << location << endl;
-#ifdef debugMassagesProgramFlow
-                cout << "main thread: case4 end" << endl;
-#endif
+                LINFO << location ;
+
+                LINFO << "main thread: case4 end";
                 break;
             }
             case 7: {
@@ -268,10 +241,12 @@ void ProgramFlow::run(Socket *mainSocket) {
                     pthread_join(pthreadVector.at(i), NULL);
                 }
                 sleep(1);
-#ifdef debugMassagesProgramFlow
-                cout << "main thread: case7" << endl;
-#endif
+                LINFO << "main thread: case7";
                 //deallocate memory and terminate the program
+                unsigned long size = listOfStructs.size();
+            /*    for(unsigned long i=0; i<size; i++){
+                    delete listOfStructs.at(i);
+                }*/
                 delete grid;
                 exit(0);
             }
@@ -281,18 +256,15 @@ void ProgramFlow::run(Socket *mainSocket) {
                 pthread_mutex_lock(&listOfTripsMutex);
                 taxiCenter.setTimer();
                 pthread_mutex_unlock(&listOfTripsMutex);
-#ifdef debugMassagesProgramFlow
-                cout << "main thread: case9 begin. current time: " << taxiCenter.getTimer() << endl;
-#endif
+
+                LINFO << "main thread: case9 begin. current time: " << taxiCenter.getTimer();
                 circleFinish = expectedNumberOfDrivers;
                 globalX = 9;
 
                 do {
                 } while (circleFinish !=0);
 
-#ifdef debugMassagesProgramFlow
-                cout << "main thread: case9 end" << endl;
-#endif
+                LINFO << "main thread: case9 end";
                 break;
             }
             default:
@@ -307,7 +279,7 @@ int ProgramFlow::acceptConnection(Socket *socket) {
         addr_len = sizeof(client_sin);
         int descriptor = accept(socket->getSocketDescriptor(),
                                 (struct sockaddr *) &client_sin, &addr_len);
-        cout << "accept descriptor number" << descriptor << endl;
+        LINFO << "accept descriptor number" << descriptor;
         socket->getListOfDescriptors().push_back(descriptor);
     return descriptor;
 }

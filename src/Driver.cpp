@@ -1,6 +1,7 @@
 #define debugMassagesDriver
 
 #include "Driver.h"
+#include "easylogging++.h"
 
 Driver::Driver(int id, int age, Status_Of_Marriage status, int yearsOfExperience, int vehicleId) :
         id(id), age(age), status(status), yearsOfExperience(yearsOfExperience),
@@ -121,19 +122,15 @@ void Driver::run(Socket *socket) {
         string numberOfOption = string(buffer);
         switch (stoi(numberOfOption)) {
             case 7: {
-#ifdef debugMassagesDriver
-                cout << "Driver: case7" << endl;
-#endif
+                LINFO << "Driver: case7";
                 //terminate the program
                 delete cabOfDriver;
                 return;
             }
             case 9: {
-#ifdef debugMassagesDriver
-                cout << "Driver: case9 (moveOneStep) begin" << endl;
-#endif
+                LINFO << "Driver: case9 (moveOneStep) begin";
                 moveOneStep();
-                cout << "current location after move" << this->currentLocation << endl;
+                LINFO << "current location after move" << this->currentLocation;
                 //serialization:
                 SerializationClass<Point> serializeClass;
                 string serializedPointStr =
@@ -141,16 +138,12 @@ void Driver::run(Socket *socket) {
                 //pass point to server
                 socket->sendData(serializedPointStr, 0);
                 memset(buffer, 0, sizeof(buffer));
-#ifdef debugMassagesDriver
-                cout << "Driver: case9 end" << endl;
-#endif
+                LINFO << "Driver: case9 end";
                 break;
             }
             //option 10: assign a trip.
             case 10: {
-#ifdef debugMassagesDriver
-                cout << "Driver: case10 (receiving trip) begin" << endl;
-#endif
+                LINFO << "Driver: case10 (receiving trip) begin";
                 socket->sendData("thanks to Nevo", 0);
                 memset(buffer, 0, sizeof(buffer));
                 socket->reciveData(buffer, sizeof(buffer),0);
@@ -159,9 +152,7 @@ void Driver::run(Socket *socket) {
                 SerializationClass<Trip *> serializeTripClass;
                 trip = serializeTripClass.deSerializationObject(strTrip, trip);
                 assignTrip(trip);
-#ifdef debugMassagesDriver
-                cout << "Driver: case10 end" << endl;
-#endif
+                LINFO << "Driver: case10 end";
                 break;
             }
             default: {

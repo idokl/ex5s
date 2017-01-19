@@ -1,10 +1,10 @@
 all: server.out client.out
 
 server.out: Server.o LuxuryCab.o ProgramFlow.o StandardCab.o TaxiCenter.o src/BfsAlgorithm.h src/Graph.h src/Node.h Grid.o Point.o InputParsing.o Trip.o Passenger.o Driver.o Cab.o CabFactory.o Socket.o Udp.o 
-	g++ -g -std=c++0x Server.o LuxuryCab.o ProgramFlow.o StandardCab.o TaxiCenter.o src/BfsAlgorithm.h src/Graph.h src/Node.h Grid.o Point.o InputParsing.o Trip.o Passenger.o Cab.o CabFactory.o Driver.o Socket.o Udp.o -lboost_serialization -o server.out
+	g++ -g -std=c++0x Server.o LuxuryCab.o ProgramFlow.o StandardCab.o TaxiCenter.o src/BfsAlgorithm.h src/Graph.h src/Node.h Grid.o Point.o InputParsing.o Trip.o Passenger.o Cab.o CabFactory.o Driver.o Socket.o Udp.o -lboost_serialization -D_DISABLE_LOGS -o server.out
 	
 client.out: Client.o LuxuryCab.o ProgramFlow.o StandardCab.o TaxiCenter.o src/BfsAlgorithm.h src/Graph.h src/Node.h  Grid.o Point.o InputParsing.o Trip.o Passenger.o Driver.o Cab.o CabFactory.o Socket.o Udp.o
-	g++ -g -std=c++0x Client.o LuxuryCab.o ProgramFlow.o StandardCab.o TaxiCenter.o src/BfsAlgorithm.h src/Graph.h src/Node.h Grid.o Point.o InputParsing.o Trip.o Passenger.o Cab.o CabFactory.o Socket.o Udp.o Driver.o -lboost_serialization -o client.out
+	g++ -g -std=c++0x Client.o LuxuryCab.o ProgramFlow.o StandardCab.o TaxiCenter.o src/BfsAlgorithm.h src/Graph.h src/Node.h Grid.o Point.o InputParsing.o Trip.o Passenger.o Cab.o CabFactory.o Socket.o Udp.o Driver.o -lboost_serialization -D_DISABLE_LOGS -o client.out
 
 CabFactory.o: src/CabFactory.cpp src/CabFactory.h
 	g++ -g -c -std=c++0x src/CabFactory.cpp	

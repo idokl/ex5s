@@ -13,6 +13,8 @@
 #include <boost/iostreams/stream.hpp>
 #include <boost/archive/binary_oarchive.hpp>
 #include <boost/archive/binary_iarchive.hpp>
+#include "easylogging++.h"
+
 
 class Point {
 private:
@@ -34,10 +36,10 @@ public:
     Point(int x, int y);
 
     //return the x coordinate of this Point
-    int getX();
+    const int getX() const;
 
     //return the y coordinate of this Point
-    int getY();
+    const int getY() const;
 
     //return true if this Point is passable.
     // false otherwise (=if there is an obstacle in this Point).
@@ -47,7 +49,7 @@ public:
     void setAvailability(bool isAvailable);
 
     //oprator overloading for printing point in the form (x,y)
-    friend ostream &operator<<(ostream &os, Point &point);
+    friend ostream &operator<<(ostream &os, const Point &point);
 
     //definition of ordering relation between Points in order to enable
     //data structures (like Map) to maintain them efficiently.

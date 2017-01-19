@@ -85,6 +85,7 @@ void TaxiCenter::bfsWrapper(Node<Point> startNode, Node<Point> endNode, TaxiCent
     pthread_t bfsThread;
     pthread_create(&bfsThread, NULL, runBfsThread, nodeOfPoints);
     pthread_join(bfsThread, NULL);
+    delete nodeOfPoints;
 }
 
 TaxiCenter::TaxiCenter() : bfsInstance(NULL){
@@ -107,5 +108,8 @@ int TaxiCenter::getNumOfDrivers() {
     return (int)this->mapOfDriversLocations.size();
 }
 
+void TaxiCenter::addDriverToListOfArrivedDrivers() {
+    this->listOfArrivedDrivers.push_back(this->mapOfDriversLocations);
+}
 
 
