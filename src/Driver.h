@@ -9,7 +9,6 @@
 #include "CabFactory.h"
 #include <string.h>
 
-
 //typedef enum {SINGLE, MARRIED, DIVORCED, WIDOWED} Status_Of_Marriage;
 
 class Driver {
@@ -57,9 +56,17 @@ public:
 
     void assignTrip(Trip *trip);
 
+    /*
+     * move one step - change the location of the driver according to the current trip.
+     */
     void moveOneStep();
 
-    //activate the driver
+    /*
+     * activate the driver - communicate with the server.
+     * get massages from the server and action accordingly:
+     * - create the driver's cab.
+     * - support options of getting trip, moving one step and terminating of the program.
+     */
     void run(Socket *socket);
 };
 

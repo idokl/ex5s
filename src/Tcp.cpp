@@ -82,14 +82,11 @@ int Tcp::initialize( ) {
 		sin.sin_family = AF_INET;
 		sin.sin_addr.s_addr = inet_addr((this->ip_address).c_str());
 		sin.sin_port = htons(this->port_number);
-		cout << "waiting to connect" << endl;
 		if (connect(this->socketDescriptor,
 				(struct sockaddr *) &sin, sizeof(sin)) < 0) {
 			//return an error represent error at this method
 			return ERROR_CONNECT;
 		}
-		cout << "connected" << endl;
-
 	}
 	//return correct if there were no problem
 	return CORRECT;
@@ -144,4 +141,3 @@ int Tcp::getSocketDescriptor() {
 vector<int> Tcp::getListOfDescriptors() {
     return this->listOfDescriptors;
 }
-

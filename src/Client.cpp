@@ -10,9 +10,6 @@ int main(int argc, char *argv[]) {
     Socket* socket = NULL;
     if (argc == 3) {
         int port = atoi(argv[2]);
-        // 0: isServer = false,
-        // port: port of the client
-
         InputParsing inputParsing = InputParsing();
         string inputString;
         //insert a driver in the following format: (id,age,status,exp erience,vehicle_id)

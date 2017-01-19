@@ -2,7 +2,6 @@
 #define EX1_VERSION_1_1_PROGRAMFLOW_H
 
 #include <vector>
-
 #include <iostream>
 #include "Point.h"
 #include "Grid.h"
@@ -21,9 +20,7 @@
  * It has methods for creating the grid (map), taxi center, drivers and cabs.
  * The run() method is responsible to get data from the user about the grid and
  * the wanted operations and to perform them.
- *
  */
-
 
 class ProgramFlow {
 public:
@@ -46,6 +43,9 @@ public:
      * 7 - exit (cleaning up the program and exiting).
      * 9 - advance the time and do the required operations (assigning trips to the drivers
      *     when the starting time of these trips is arriving, advancing of the relevant drivers)
+     * The implementation of this method includes creation of threads that are responsible to
+     * communicate with the clients (drivers). each thread treat one driver.
+     * Data is passed between the threads by object of TaxiCenter (common data base).
     */
     static void run(Socket *socket);
 
@@ -65,6 +65,7 @@ public:
         int id;
     };
 
+    //accept connection from the client (for starting communication with the driver)
     static int acceptConnection(Socket *socket);
 };
 

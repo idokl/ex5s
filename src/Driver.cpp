@@ -100,14 +100,15 @@ void Driver::moveOneStep() {
     return;
 }
 
-//communicate with the server
+//communicate with the server (documentation is in Driver.h file)
 void Driver::run(Socket *socket) {
-    string reciveNotification;
     char buffer[100000];
     stringstream ss;
     ss << this->id;
+    //send our id to the server
     socket->sendData(ss.str(), 0);
     memset(buffer, 0, sizeof(buffer));
+    //recive information about the driver's cab and create it
     socket->reciveData(buffer, sizeof(buffer), 0);
     string cabDataString = string(buffer);
     cabOfDriver = CabFactory::createCab(cabDataString);
@@ -117,16 +118,16 @@ void Driver::run(Socket *socket) {
     while (true) {
         memset(buffer, 0, sizeof(buffer));
         socket->reciveData(buffer, sizeof(buffer), 0);
-
-
         string numberOfOption = string(buffer);
         switch (stoi(numberOfOption)) {
+            //case7: exit
             case 7: {
-                LINFO << "Driver: case7";
+                LINFO << "Driver: case7 - exit";
                 //terminate the program
                 delete cabOfDriver;
                 return;
             }
+            //case9: move one step and send our current location to the server
             case 9: {
                 LINFO << "Driver: case9 (moveOneStep) begin";
                 moveOneStep();
@@ -141,7 +142,7 @@ void Driver::run(Socket *socket) {
                 LINFO << "Driver: case9 end";
                 break;
             }
-            //option 10: assign a trip.
+            //case10: assign a trip.
             case 10: {
                 LINFO << "Driver: case10 (receiving trip) begin";
                 socket->sendData("thanks to Nevo", 0);
