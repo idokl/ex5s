@@ -73,8 +73,9 @@ public:
 
     int getNumOfDrivers();
 
-    void addDriverToListOfArrivedDrivers();
+    void addDriverToListOfArrivedDrivers(int driverId,Point driverLocation);
 
+    vector<map<int,Point>> getlistOfArrivedDrivers();
     void setTimer();
     //destructor
     ~TaxiCenter();

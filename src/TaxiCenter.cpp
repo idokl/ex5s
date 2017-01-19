@@ -108,8 +108,14 @@ int TaxiCenter::getNumOfDrivers() {
     return (int)this->mapOfDriversLocations.size();
 }
 
-void TaxiCenter::addDriverToListOfArrivedDrivers() {
-    this->listOfArrivedDrivers.push_back(this->mapOfDriversLocations);
+void TaxiCenter::addDriverToListOfArrivedDrivers(int driverId, Point driverLocation) {
+    map<int,Point> driverArrived = map<int,Point>();
+    driverArrived[driverId] = driverLocation;
+    this->listOfArrivedDrivers.push_back(driverArrived);
+}
+
+vector<map<int, Point>> TaxiCenter::getlistOfArrivedDrivers() {
+    return this->listOfArrivedDrivers;
 }
 
 
