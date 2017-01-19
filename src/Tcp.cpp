@@ -53,6 +53,7 @@ int Tcp::initialize( ) {
 		sin.sin_family = AF_INET;
 		sin.sin_addr.s_addr = INADDR_ANY;
 		sin.sin_port = htons(this->port_number);
+		bzero(&(sin.sin_zero),8);
 		//bind
 		if (::bind(this->socketDescriptor,
 				(struct sockaddr *) &sin, sizeof(sin)) < 0) {
@@ -65,10 +66,6 @@ int Tcp::initialize( ) {
 			//return an error represent error at this method
 			return ERROR_LISTEN;
 		}
-		//accept
-		struct sockaddr_in client_sin;
-		unsigned int addr_len = sizeof(client_sin);
-
 		if (this->descriptorCommunicateClient < 0) {
 			//return an error represent error at this method
 			return ERROR_ACCEPT;
@@ -101,7 +98,7 @@ int Tcp::initialize( ) {
 * and the socket descroptor											   *
 ***********************************************************************/
 int Tcp::sendData(string data, int descriptorCommunicateClient) {
-	int data_len = data.length();
+	int data_len = data.length() + 1;
 	const char * datas = data.c_str();
 	int sent_bytes = send(this->isServer ? descriptorCommunicateClient
 											 : this->socketDescriptor, datas, data_len, 0);
