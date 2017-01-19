@@ -14,6 +14,7 @@
 #include <cstring>
 #include <iostream>
 #include <string>
+#include <vector>
 
 using namespace std;
 
@@ -83,6 +84,8 @@ public:
 	virtual int reciveData(char* buffer, int size, int descriptorCommunicateClient) = 0;
 
 	virtual int getSocketDescriptor() = 0;
+	
+	virtual vector<int> getListOfDescriptors() = 0;
 
 
 

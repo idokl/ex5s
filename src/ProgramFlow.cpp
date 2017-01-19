@@ -1,4 +1,4 @@
-#define debugMassagesProgramFlow
+//#define debugMassagesProgramFlow
 
 #include "ProgramFlow.h"
 
@@ -308,6 +308,6 @@ int ProgramFlow::acceptConnection(Socket *socket) {
         int descriptor = accept(socket->getSocketDescriptor(),
                                 (struct sockaddr *) &client_sin, &addr_len);
         cout << "accept descriptor number" << descriptor << endl;
-
+        socket->getListOfDescriptors().push_back(descriptor);
     return descriptor;
 }

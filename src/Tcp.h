@@ -6,11 +6,13 @@
 #ifndef TCP_H_
 #define TCP_H_
 
+#include <vector>
 #include "Socket.h"
 
 class Tcp: public Socket {
 private:
 	int descriptorCommunicateClient;
+    vector<int> listOfDescriptors;
 public:
 	/***********************************************************************
 	* function name: Tcp												   *
@@ -52,6 +54,8 @@ public:
 	int reciveData(char* buffer, int size, int descriptorCommunicateClient);
 
 	int getSocketDescriptor();
+
+    vector<int> getListOfDescriptors();
 };
 
 #endif /* TCP_H_ */

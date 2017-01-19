@@ -4,6 +4,7 @@
 * methods of tcp socket type								*
 ************************************************************/
 
+#include <boost/iostreams/close.hpp>
 #include "Tcp.h"
 
 /***********************************************************************
@@ -18,6 +19,7 @@ Tcp::Tcp(bool isServers, int port_num, string ip) {
 	this->port_number = port_num;
 	this->isServer = isServers;
 	this->ip_address = ip;
+    this->listOfDescriptors = vector<int>();
 
 }
 
@@ -28,7 +30,10 @@ Tcp::Tcp(bool isServers, int port_num, string ip) {
 * The Function operation: default destructor					       *
 ***********************************************************************/
 Tcp::~Tcp() {
-	// TODO Auto-generated destructor stub
+    unsigned long size = this->listOfDescriptors.size();
+    for(unsigned long i=0; i<size; i++){
+        close(listOfDescriptors.at(i));
+    }
 }
 
 /***********************************************************************
@@ -127,9 +132,6 @@ int Tcp::reciveData(char* buffer, int size, int descriptorCommunicateClient) {
 	else if (read_bytes < 0) {
 		//return an error represent error at this method
 		return ERROR_RECIVE;
-	} else {
-		//prinrting the massege
-//		cout<<buffer<<endl;
 	}
 	//return correct if there were no problem
 	return read_bytes;
@@ -137,5 +139,9 @@ int Tcp::reciveData(char* buffer, int size, int descriptorCommunicateClient) {
 
 int Tcp::getSocketDescriptor() {
     return this->socketDescriptor;
+}
+
+vector<int> Tcp::getListOfDescriptors() {
+    return this->listOfDescriptors;
 }
 
