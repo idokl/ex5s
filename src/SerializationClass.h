@@ -1,6 +1,8 @@
 #ifndef EX4_SERIALIZECLASS_H
 #define EX4_SERIALIZECLASS_H
+
 #include <string>
+
 using namespace std;
 
 template<class T>

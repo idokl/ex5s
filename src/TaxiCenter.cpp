@@ -6,10 +6,11 @@ TaxiCenter::TaxiCenter(BfsAlgorithm<Point> &bfsInstance) : bfsInstance(bfsInstan
 void TaxiCenter::createTrip(InputParsing::parsedTripData parsedTripDataTrip) {
     Node<Point> startNode(parsedTripDataTrip.start);
     Node<Point> endNode(parsedTripDataTrip.end);
-    this->bfsWrapper(startNode,endNode,this);
+    this->bfsWrapper(startNode, endNode, this);
     this->nextPointsOfPath.pop();
     Trip *trip = new Trip(parsedTripDataTrip.id, parsedTripDataTrip.start, parsedTripDataTrip.end,
-                          parsedTripDataTrip.numberOfPassengers, parsedTripDataTrip.tariff, nextPointsOfPath, parsedTripDataTrip.time);
+                          parsedTripDataTrip.numberOfPassengers, parsedTripDataTrip.tariff,
+                          nextPointsOfPath, parsedTripDataTrip.time);
     listOfTrips.push_back(trip);
 }
 
@@ -58,29 +59,29 @@ void TaxiCenter::deleteTrip(int i) {
     this->listOfTrips.erase(this->listOfTrips.begin() + i);
 }
 
-struct nodeOfPoints{
+struct nodeOfPoints {
     Node<Point> startNode;
     Node<Point> endNode;
-    TaxiCenter* taxiCenter;
+    TaxiCenter *taxiCenter;
 };
 
 void *TaxiCenter::runBfsThread(void *t) {
-    nodeOfPoints *x =(struct nodeOfPoints*)t;
-    x->taxiCenter->bfsNavigate(x->startNode,x->endNode);
+    nodeOfPoints *x = (struct nodeOfPoints *) t;
+    x->taxiCenter->bfsNavigate(x->startNode, x->endNode);
     return NULL;
 }
 
-void TaxiCenter::bfsNavigate(Node<Point> startNode,  Node<Point> endNode) {
+void TaxiCenter::bfsNavigate(Node<Point> startNode, Node<Point> endNode) {
     this->nextPointsOfPath = this->bfsInstance.navigate(startNode, endNode);
 }
 
 void TaxiCenter::bfsWrapper(Node<Point> startNode, Node<Point> endNode, TaxiCenter *taxiCenter) {
 
-   nodeOfPoints *nodeOfPoints = new struct nodeOfPoints;
+    nodeOfPoints *nodeOfPoints = new struct nodeOfPoints;
 
     nodeOfPoints->startNode = startNode;
     nodeOfPoints->endNode = endNode;
-    nodeOfPoints->taxiCenter=taxiCenter;
+    nodeOfPoints->taxiCenter = taxiCenter;
 
     pthread_t bfsThread;
     pthread_create(&bfsThread, NULL, runBfsThread, nodeOfPoints);
@@ -88,7 +89,7 @@ void TaxiCenter::bfsWrapper(Node<Point> startNode, Node<Point> endNode, TaxiCent
     delete nodeOfPoints;
 }
 
-TaxiCenter::TaxiCenter() : bfsInstance(NULL){
+TaxiCenter::TaxiCenter() : bfsInstance(NULL) {
 
 }
 
@@ -105,11 +106,11 @@ Point TaxiCenter::getDriverLocation(int driverId) {
 }
 
 int TaxiCenter::getNumOfDrivers() {
-    return (int)this->mapOfDriversLocations.size();
+    return (int) this->mapOfDriversLocations.size();
 }
 
 void TaxiCenter::addDriverToListOfArrivedDrivers(int driverId, Point driverLocation) {
-    map<int,Point> driverArrived = map<int,Point>();
+    map<int, Point> driverArrived = map<int, Point>();
     driverArrived[driverId] = driverLocation;
     this->listOfArrivedDrivers.push_back(driverArrived);
 }

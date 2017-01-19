@@ -4,11 +4,11 @@ Point::Point() : x(0), y(0) {}
 
 Point::Point(int x, int y) : x(x), y(y), isPassable(true) {}
 
-const int Point::getX() const{
+const int Point::getX() const {
     return x;
 }
 
-const int Point::getY() const{
+const int Point::getY() const {
     return y;
 }
 
@@ -30,7 +30,7 @@ bool Point::operator<(const Point &other) const {
            (x == other.x && (y < other.y));
 }
 
-ostream &operator<<(ostream &os, const Point &point){
+ostream &operator<<(ostream &os, const Point &point) {
     return os << "(" << point.getX() << "," << point.getY() << ")";
 }
 

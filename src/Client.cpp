@@ -2,12 +2,13 @@
 #include "ProgramFlow.h"
 #include "Tcp.h"
 #include "easylogging++.h"
+
 _INITIALIZE_EASYLOGGINGPP
 
 using namespace std;
 
 int main(int argc, char *argv[]) {
-    Socket* socket = NULL;
+    Socket *socket = NULL;
     if (argc == 3) {
         int port = atoi(argv[2]);
         InputParsing inputParsing = InputParsing();
@@ -20,8 +21,8 @@ int main(int argc, char *argv[]) {
         socket->initialize();
         LINFO << "Client initialized";
         try {
-            Driver driver = Driver(driverData.id, driverData.age, driverData.status, driverData.yearsOfExperience,
-                                   driverData.vehicleId);
+            Driver driver = Driver(driverData.id, driverData.age, driverData.status,
+                                   driverData.yearsOfExperience, driverData.vehicleId);
             driver.run(socket);
         } catch (const char *msg) {
             cerr << msg << endl;

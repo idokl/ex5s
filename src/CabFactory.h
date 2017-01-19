@@ -7,6 +7,7 @@
 #include "InputParsing.h"
 
 using namespace std;
+
 class CabFactory {
 public:
     static Cab *createCab(string inputString);

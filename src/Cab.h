@@ -25,8 +25,6 @@ typedef enum {
 } Taxi_Type;
 
 
-
-
 class Cab {
 private:
     int id;
@@ -50,6 +48,7 @@ public:
     }
 
     Cab();
+
     Cab(int id, Model_Of_Car carModel, Color_Of_Car color);
 
     int getId() const;

@@ -18,5 +18,5 @@ int Passenger::giveFeedBack() {
     return this->getSatisfaction();
 }
 
-Passenger::Passenger() : source(0,0), destination(0,0), isLuxury(true) {
+Passenger::Passenger() : source(0, 0), destination(0, 0), isLuxury(true) {
 }

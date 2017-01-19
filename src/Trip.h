@@ -39,7 +39,7 @@ public:
     Trip();
 
     Trip(int rideId, Point startingPoint, Point endingPoint, int numOfPassengers, double taarif //);
-        , stack <Node<Point>> pathWithoutStartingPoint, int time);
+            , stack<Node<Point>> pathWithoutStartingPoint, int time);
 
     int getRideId() const;
 
@@ -55,9 +55,10 @@ public:
 
     double getRateOfTrip() const;
 
-    const list<Point> &getPath() const;
+    const list <Point> &getPath() const;
 
     void removeNextPointOfPath();
+
     int getTime();
 
     ~Trip();
