@@ -1,13 +1,14 @@
 #include <string>
 #include "ProgramFlow.h"
 #include "Tcp.h"
+#include "easylogging++.h"
 
 _INITIALIZE_EASYLOGGINGPP
 
 using namespace std;
 
 int main(int argc, char *argv[]) {
-    Socket* socket = NULL;
+    Socket *socket = NULL;
     if (argc == 2) {
         int port = stoi(argv[1]);
         // 1: isServer = true,

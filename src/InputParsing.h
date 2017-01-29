@@ -8,9 +8,12 @@
 #include "Cab.h"
 
 class Driver;
+
 using namespace std;
 
-typedef enum {SINGLE, MARRIED, DIVORCED, WIDOWED} Status_Of_Marriage;
+typedef enum {
+    SINGLE, MARRIED, DIVORCED, WIDOWED
+} Status_Of_Marriage;
 
 class InputParsing {
 private:

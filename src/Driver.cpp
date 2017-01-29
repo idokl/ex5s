@@ -5,7 +5,7 @@
 
 Driver::Driver(int id, int age, Status_Of_Marriage status, int yearsOfExperience, int vehicleId) :
         id(id), age(age), status(status), yearsOfExperience(yearsOfExperience),
-        vehicleId(vehicleId),currentLocation(0,0) {
+        vehicleId(vehicleId), currentLocation(0, 0) {
     numOfTrips = 1;
     averageSatisfactions = 0;
     currentTrip = NULL;
@@ -31,7 +31,7 @@ double Driver::getSatisfactions() const {
     return averageSatisfactions;
 }
 
-Cab* Driver::getInfoCab() const{
+Cab *Driver::getInfoCab() const {
     return cabOfDriver;
 }
 
@@ -39,16 +39,16 @@ Point Driver::currentPlace() {
     return currentLocation;
 }
 
-void Driver::clientSatisfactions(int clientSatisfactions){
-    if((numOfTrips==0) || (numOfTrips ==1)){
+void Driver::clientSatisfactions(int clientSatisfactions) {
+    if ((numOfTrips == 0) || (numOfTrips == 1)) {
         averageSatisfactions = clientSatisfactions;
-    }else{
-        averageSatisfactions = (averageSatisfactions+clientSatisfactions)/numOfTrips;
+    } else {
+        averageSatisfactions = (averageSatisfactions + clientSatisfactions) / numOfTrips;
     }
-    if(averageSatisfactions>5){
-        averageSatisfactions=5;
-    }else if(averageSatisfactions<1){
-        averageSatisfactions =1;
+    if (averageSatisfactions > 5) {
+        averageSatisfactions = 5;
+    } else if (averageSatisfactions < 1) {
+        averageSatisfactions = 1;
     }
     numOfTrips++;
 }
@@ -61,7 +61,7 @@ void Driver::attachCabToDriver(Cab *infoCab) {
     cabOfDriver = infoCab;
 }
 
-vector<Passenger> Driver::getListOfPassengers() const{
+vector<Passenger> Driver::getListOfPassengers() const {
     return listOfPassengers;
 }
 
@@ -74,7 +74,7 @@ void Driver::setCurrentLocation(Point point) {
 }
 
 void Driver::assignTrip(Trip *trip) {
-        currentTrip = trip;
+    currentTrip = trip;
 }
 
 void Driver::moveOneStep() {
@@ -84,7 +84,7 @@ void Driver::moveOneStep() {
     }
     //if the driver has LuxuryCab, he has to skip one point of the path:
     if (this->cabOfDriver->getTaxiType() == LUXURY_CAB &&
-            this->currentTrip->getPath().size() > 1) {
+        this->currentTrip->getPath().size() > 1) {
         this->currentTrip->removeNextPointOfPath();
     }
     //move to the next point (one block):
@@ -127,7 +127,7 @@ void Driver::run(Socket *socket) {
                 delete cabOfDriver;
                 return;
             }
-            //case9: move one step and send our current location to the server
+                //case9: move one step and send our current location to the server
             case 9: {
                 LINFO << "Driver: case9 (moveOneStep) begin";
                 moveOneStep();
@@ -142,12 +142,12 @@ void Driver::run(Socket *socket) {
                 LINFO << "Driver: case9 end";
                 break;
             }
-            //case10: assign a trip.
+                //case10: assign a trip.
             case 10: {
                 LINFO << "Driver: case10 (receiving trip) begin";
                 socket->sendData("thanks to Nevo", 0);
                 memset(buffer, 0, sizeof(buffer));
-                socket->reciveData(buffer, sizeof(buffer),0);
+                socket->reciveData(buffer, sizeof(buffer), 0);
                 socket->sendData("thanks to Nevo", 0);
                 string strTrip(buffer, sizeof(buffer));
                 SerializationClass<Trip *> serializeTripClass;

@@ -4,7 +4,7 @@
 using namespace std;
 
 //variable that helps to the main thread to pass signals to the other threads
-int globalX=0;
+int globalX = 0;
 //counter that helps  to the main thread to check all the threads finished their action
 int circleFinish;
 //mutexes:
@@ -32,7 +32,7 @@ Graph<Point> *ProgramFlow::createGrid(int width, int height, vector<Point> listO
  * The function execute the corresponding actions of communication with the driver.
  * (The thread also uses the taxiCenter object to get additional data about its driver).
  */
-void *ProgramFlow::threadsRun(void* threadStruct) {
+void *ProgramFlow::threadsRun(void *threadStruct) {
     bool loopCondition = true;
     int timeOfTheLastAction = -1;
     threadData *threadData = (struct threadData *) threadStruct;
@@ -41,105 +41,108 @@ void *ProgramFlow::threadsRun(void* threadStruct) {
     Socket *socket = threadData->socket;
     TaxiCenter *taxiCenter = threadData->taxiCenter;
     bool arrived = true;
-    Point arrivedPoint(0,0);
+    Point arrivedPoint(0, 0);
     bool giveHimTrip = true;
     char buffer[100000];
     while (loopCondition) {
-            switch (globalX) {
-                //exit (break the loop and return)
-                case 7: {
-                    socket->sendData("7", socketDescriptor);
-                    delete threadData;
-                    loopCondition = false;
-                }
+        switch (globalX) {
+            //exit (break the loop and return)
+            case 7: {
+                socket->sendData("7", socketDescriptor);
+                //delete threadData;
+                loopCondition = false;
+            }
                 //ask the driver to move one step (or assign trip to the driver, if we should)
-                case 9: {
-                    if (timeOfTheLastAction == taxiCenter->getTimer()) {
+            case 9: {
+                if (timeOfTheLastAction == taxiCenter->getTimer()) {
+                    break;
+                }
+                // flag that indicate whether there was assigning trip in this time
+                // (for preventing assigning of trip and movement in the same time)
+                int assignFlag = 0;
+                /*
+                 assign trip to the driver if now is the starting time of the trip
+                 and the driver is available ("arrived")
+                */
+                pthread_mutex_lock(&listOfTripsMutex);
+                for (unsigned int i = 0; i < taxiCenter->getListOfTrips().size(); i++) {
+                    int tripStartTime = taxiCenter->getListOfTrips().at(i)->getTime();
+                    int currentTime = taxiCenter->getTimer();
+                    Point currentDriverLocation = taxiCenter->getDriverLocation(driverId);
+                    Point tripStartingPoint =
+                            taxiCenter->getListOfTrips().at(i)->getStartingPoint();
+                    if (((tripStartTime == currentTime)
+                         && (currentDriverLocation == tripStartingPoint)) && (arrived)) {
+
+                        arrivedPoint = taxiCenter->getListOfTrips().at(i)->getEndingPoint();
+                        arrived = false;
+                        //option 10 (of driver): assign a trip to the driver
+                        socket->sendData("10", socketDescriptor);
+                        memset(buffer, 0, sizeof(buffer));
+                        //recive massage from the driver that confirms he has
+                        // received our massage (gratitude to friend that teach us
+                        //about the importance of reciving massage after every sending)
+                        socket->reciveData(buffer, sizeof(buffer),
+                                           socketDescriptor); //recive "thanks to Nevo"
+                        SerializationClass<Trip *> serializeClass;
+                        string serializedTrip = serializeClass.serializationObject(
+                                taxiCenter->getListOfTrips().at(i));
+                        //send trip to the driver
+                        socket->sendData(serializedTrip, socketDescriptor);
+                        memset(buffer, 0, sizeof(buffer));
+                        //recive massage from the driver that confirms he has
+                        // received our massage
+                        socket->reciveData(buffer, sizeof(buffer),
+                                           socketDescriptor); //recive "thanks to Nevo"
+                        delete taxiCenter->getListOfTrips().at(i);
+                        taxiCenter->deleteTrip(i);
+                        LINFO << "secondary thread: (socket descriptor: "
+                              << socketDescriptor << "): trip was sent to the client";
+                        assignFlag = 1;
                         break;
                     }
-                    // flag that indicate whether there was assigning trip in this time
-                    // (for preventing assigning of trip and movement in the same time)
-                    int assignFlag = 0;
-                    /*
-                     assign trip to the driver if now is the starting time of the trip
-                     and the driver is available ("arrived")
-                    */
-                    pthread_mutex_lock(&listOfTripsMutex);
-                    for (unsigned int i = 0; i < taxiCenter->getListOfTrips().size(); i++) {
-                        int tripStartTime = taxiCenter->getListOfTrips().at(i)->getTime();
-                        int currentTime = taxiCenter->getTimer();
-                        Point currentDriverLocation = taxiCenter->getDriverLocation(driverId);
-                        Point tripStartingPoint =
-                                taxiCenter->getListOfTrips().at(i)->getStartingPoint();
-                        if (((tripStartTime == currentTime)
-                             && (currentDriverLocation == tripStartingPoint)) && (arrived)) {
-                            if (giveHimTrip) {
-                                arrivedPoint = taxiCenter->getListOfTrips().at(i)->getEndingPoint();
-                                arrived = false;
-                                //option 10 (of driver): assign a trip to the driver
-                                socket->sendData("10", socketDescriptor);
-                                memset(buffer, 0, sizeof(buffer));
-                                //recive massage from the driver that confirms he has
-                                // received our massage (gratitude to friend that teach us
-                                //about the importance of reciving massage after every sending)
-                                socket->reciveData(buffer, sizeof(buffer),
-                                                   socketDescriptor); //recive "thanks to Nevo"
-                                SerializationClass<Trip *> serializeClass;
-                                string serializedTrip = serializeClass.serializationObject(
-                                        taxiCenter->getListOfTrips().at(i));
-                                //send trip to the driver
-                                socket->sendData(serializedTrip, socketDescriptor);
-                                memset(buffer, 0, sizeof(buffer));
-                                //recive massage from the driver that confirms he has
-                                // received our massage
-                                socket->reciveData(buffer, sizeof(buffer),
-                                                   socketDescriptor); //recive "thanks to Nevo"
-                                delete taxiCenter->getListOfTrips().at(i);
-                                taxiCenter->deleteTrip(i);
-                                LINFO << "secondary thread: (socket descriptor: "
-                                      << socketDescriptor << "): trip was sent to the client";
-                                assignFlag = 1;
-                                break;
-                            }
-                        }
-                    }
-                    pthread_mutex_unlock(&listOfTripsMutex);
-                    if (assignFlag == 0) {
-                        //sending 9 in order to advance the driver one step
-                        socket->sendData("9", socketDescriptor);
-                        memset(buffer, 0, sizeof(buffer));
-                        //recive from the driver his location (after the moving, if he moved)
-                        socket->reciveData(buffer, sizeof(buffer), socketDescriptor);
-                        string locationStr(buffer, sizeof(buffer));
-                        Point driverLocation;
-                        SerializationClass<Point> serializeClass;
-                        driverLocation =
-                                serializeClass.deSerializationObject(locationStr, driverLocation);
-                        //if the driver arrived to the end point of his trip
-                        //and he's available to get more trips, update the variable "arrived"
-                        if(driverLocation == arrivedPoint){
-                            arrived = true;
-                        }
-                        pthread_mutex_lock(&driverLocationsMapMutex);
-                        //update the driver location in the taxi center
-                        taxiCenter->addDriverLocation(driverId, driverLocation);
-                        if(arrived){
-                            taxiCenter->addDriverToListOfArrivedDrivers(driverId, driverLocation);
-                        }
-                        pthread_mutex_unlock(&driverLocationsMapMutex);
-                        LINFO << "secondary thread: (socket descriptor: " << socketDescriptor << "): 9 was sent to the client";
-                        LINFO << "secondary thread: (socket descriptor: " << socketDescriptor << "): the point " << driverLocation << " was received from the client";
-                    }
-                    timeOfTheLastAction = taxiCenter->getTimer();
-                    pthread_mutex_lock(&circleFinishMutex);
-                    circleFinish--;
-                    LINFO << "secondary thread: (socket descriptor: " << socketDescriptor << "): I did: circleFinish--. now circleFinish = " << circleFinish;
-                    pthread_mutex_unlock(&circleFinishMutex);
-
-                    break;
                 }
-                default:
-                    break;
+                pthread_mutex_unlock(&listOfTripsMutex);
+                if (assignFlag == 0) {
+                    //sending 9 in order to advance the driver one step
+                    socket->sendData("9", socketDescriptor);
+                    memset(buffer, 0, sizeof(buffer));
+                    //recive from the driver his location (after the moving, if he moved)
+                    socket->reciveData(buffer, sizeof(buffer), socketDescriptor);
+                    string locationStr(buffer, sizeof(buffer));
+                    Point driverLocation;
+                    SerializationClass<Point> serializeClass;
+                    driverLocation =
+                            serializeClass.deSerializationObject(locationStr, driverLocation);
+                    //if the driver arrived to the end point of his trip
+                    //and he's available to get more trips, update the variable "arrived"
+                    if (driverLocation == arrivedPoint) {
+                        arrived = true;
+                    }
+                    pthread_mutex_lock(&driverLocationsMapMutex);
+                    //update the driver location in the taxi center
+                    taxiCenter->addDriverLocation(driverId, driverLocation);
+                    if (arrived) {
+                        taxiCenter->addDriverToListOfArrivedDrivers(driverId, driverLocation);
+                    }
+                    pthread_mutex_unlock(&driverLocationsMapMutex);
+                    LINFO << "secondary thread: (socket descriptor: " << socketDescriptor
+                          << "): 9 was sent to the client";
+                    LINFO << "secondary thread: (socket descriptor: " << socketDescriptor
+                          << "): the point " << driverLocation
+                          << " was received from the client";
+                }
+                timeOfTheLastAction = taxiCenter->getTimer();
+                pthread_mutex_lock(&circleFinishMutex);
+                circleFinish--;
+                LINFO << "secondary thread: (socket descriptor: " << socketDescriptor
+                      << "): I did: circleFinish--. now circleFinish = " << circleFinish;
+                pthread_mutex_unlock(&circleFinishMutex);
+
+                break;
+            }
+            default:
+                break;
         }
     }
     return NULL;
@@ -154,6 +157,7 @@ void ProgramFlow::run(Socket *mainSocket) {
     pthread_mutex_init(&timerMutex, 0);
 
     char buffer[100000];
+    bool runLoop = true;
     string inputString;
     InputParsing inputParsing = InputParsing();
     InputParsing::gridDimensions gd;
@@ -200,8 +204,8 @@ void ProgramFlow::run(Socket *mainSocket) {
     TaxiCenter taxiCenter = ProgramFlow::createTaxiCenter(bfs);
     Cab *cabForDriver = NULL;
     int expectedNumberOfDrivers = 0;
-
-    while (true) {
+    taxiCenter.threadPoolBfsCalc(5);
+    while (runLoop) {
         //get number of option and do the defined operation
         getline(cin, inputString);
         LINFO << inputString;
@@ -223,7 +227,7 @@ void ProgramFlow::run(Socket *mainSocket) {
                         memset(buffer, 0, sizeof(buffer));
                         mainSocket->reciveData(buffer, sizeof(buffer), descriptor);
                         LINFO << "main thread: case1 recived driverId";
-                        threadData * threadDataStruct = new struct threadData;
+                        threadData *threadDataStruct = new struct threadData;
                         string driverIdString = string(buffer);
                         threadDataStruct->id = stoi(driverIdString);
                         taxiCenter.addDriverLocation(threadDataStruct->id, Point());
@@ -241,6 +245,8 @@ void ProgramFlow::run(Socket *mainSocket) {
                                 buffer, sizeof(buffer), descriptor); //recive "thanks to Nevo"
                         pthread_create(&pthread, NULL, ProgramFlow::threadsRun, threadDataStruct);
                         pthreadVector.push_back(pthread);
+                        vectorOfStructs.push_back(threadDataStruct);
+                        LINFO << "main thread: case1 - END OF ITERATION OF THE LOOP";
                         LINFO << "main thread: case1 - END OF ITERATION OF THE LOOP "
                                 "(secondary thread was created)";
                     }
@@ -249,7 +255,7 @@ void ProgramFlow::run(Socket *mainSocket) {
                 LINFO << "main thread: case1 end";
                 break;
             }
-            //case2: add trip to the data base (i.e. to the taxiCenter)
+                //case2: add trip to the data base (i.e. to the taxiCenter)
             case 2: {
                 LINFO << "main thread: case2 begin";
                 //create a trip (according to the given parameters) and add it to the taxi center
@@ -276,7 +282,7 @@ void ProgramFlow::run(Socket *mainSocket) {
                 LINFO << "main thread: case2 end";
                 break;
             }
-            //case3: create a cab
+                //case3: create a cab
             case 3: {
                 LINFO << "main thread: case3 begin";
                 //create a cab (according to the given parameters) and add it to the taxi center
@@ -294,7 +300,7 @@ void ProgramFlow::run(Socket *mainSocket) {
                 LINFO << "main thread: case3 end";
                 break;
             }
-            //case4: print location of specific driver
+                //case4: print location of specific driver
             case 4: {
                 LINFO << "main thread: case4 begin";
                 //query about the location of a specific driver
@@ -308,22 +314,33 @@ void ProgramFlow::run(Socket *mainSocket) {
                     LINFO << "main thread: the id of the driver isn't valid";
                     cout << "-1" << endl;
                 }
+                int id = stoi(inputString);
+                //get information about the driver location from the taxi center
+                Point location = taxiCenter.getDriverLocation(id);
+                cout << location << endl;
                 LINFO << "main thread: case4 end";
                 break;
             }
-            //case7: exit - terminate all the threads
+                //case7: exit - terminate all the threads
             case 7: {
                 globalX = 7;
-                for(unsigned long i = 0; i<pthreadVector.size(); i++){
+                for (unsigned long i = 0; i < pthreadVector.size(); i++) {
                     pthread_join(pthreadVector.at(i), NULL);
                 }
+                for (unsigned long i = 0; i < vectorOfStructs.size(); i++) {
+                    delete vectorOfStructs.at(i);
+                }
+
                 sleep(1);
                 LINFO << "main thread: case7 - exit";
                 //deallocate memory and terminate the program
+                taxiCenter.terminate();
                 delete grid;
-                exit(0);
+                runLoop = false;
+
+                break;
             }
-            //case9: advance the time and do the suitable actions (assigning trips/moving)
+                //case9: advance the time and do the suitable actions (assigning trips/moving)
             case 9: {
                 circleFinish = expectedNumberOfDrivers;
 
@@ -338,7 +355,7 @@ void ProgramFlow::run(Socket *mainSocket) {
                 globalX = 9;
 
                 do {
-                } while (circleFinish !=0);
+                } while (circleFinish != 0);
 
                 LINFO << "main thread: case9 end";
                 break;
@@ -352,12 +369,12 @@ void ProgramFlow::run(Socket *mainSocket) {
 }
 
 int ProgramFlow::acceptConnection(Socket *socket) {
-        struct sockaddr_in client_sin;
-        unsigned int addr_len;
-        addr_len = sizeof(client_sin);
-        int descriptor = accept(socket->getSocketDescriptor(),
-                                (struct sockaddr *) &client_sin, &addr_len);
-        LINFO << "accept descriptor number" << descriptor;
-        socket->getListOfDescriptors().push_back(descriptor);
+    struct sockaddr_in client_sin;
+    unsigned int addr_len;
+    addr_len = sizeof(client_sin);
+    int descriptor = accept(socket->getSocketDescriptor(),
+                            (struct sockaddr *) &client_sin, &addr_len);
+    LINFO << "accept descriptor number" << descriptor;
+    socket->getListOfDescriptors().push_back(descriptor);
     return descriptor;
 }

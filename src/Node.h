@@ -37,6 +37,7 @@ public:
     }
 
     Node();
+
     Node(T value);
 
     //nodes comparison according to their values
@@ -68,6 +69,7 @@ template<class T>
 T Node<T>::getValue() {
     return this->value;
 }
+
 template<class T>
 
 Node<T>::Node() {
