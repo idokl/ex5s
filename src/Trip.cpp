@@ -1,16 +1,9 @@
 #include "Trip.h"
 
-Trip::Trip(int rideId, Point startingPoint, Point endingPoint, int numOfPassengers, double taarif,
-           stack<Node<Point>> stackOfPathWithoutStartingPoint, int time) :
+Trip::Trip(int rideId, Point startingPoint, Point endingPoint, int numOfPassengers, double taarif, int time):
         rideId(rideId), startingPoint(startingPoint),
         endingPoint(endingPoint),
         numOfPassengers(numOfPassengers), time(time) {
-    while (!stackOfPathWithoutStartingPoint.empty()) {
-        Node<Point> n = stackOfPathWithoutStartingPoint.top();
-        Point p = n.getValue();
-        nextPointsOfPath.push_back(p);
-        stackOfPathWithoutStartingPoint.pop();
-    }
     rateOfTrip = taarif;
     passedMeters = 0;
 }
@@ -63,5 +56,16 @@ Trip::Trip() : rideId(0), passedMeters(0), startingPoint(0, 0),
 
 int Trip::getTime() {
     return time;
+};
+
+
+void Trip::setNextPointOfPath(stack<Node<Point>> nextPointsOfPathStack) {
+    nextPointsOfPathStack.pop();
+    while (! nextPointsOfPathStack.empty()) {
+        Node<Point> n =  nextPointsOfPathStack.top();
+        Point p = n.getValue();
+        nextPointsOfPath.push_back(p);
+        nextPointsOfPathStack.pop();
+    }
 };
 

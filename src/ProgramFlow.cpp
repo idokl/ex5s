@@ -39,6 +39,7 @@ void *ProgramFlow::threadsRun(void *threadStruct) {
     int driverId = threadData->id;
     Socket *socket = threadData->socket;
     TaxiCenter *taxiCenter = threadData->taxiCenter;
+
     bool arrived = true;
     Point arrivedPoint(0, 0);
     bool giveHimTrip = true;
@@ -181,7 +182,7 @@ void ProgramFlow::run(Socket *mainSocket) {
     TaxiCenter taxiCenter = ProgramFlow::createTaxiCenter(bfs);
     Cab *cabForDriver = NULL;
     int expectedNumberOfDrivers = 0;
-
+    taxiCenter.threadPoolBfsCalc(5);
     while (runLoop) {
         //get number of option and do the defined operation
         getline(cin, inputString);
@@ -280,8 +281,10 @@ void ProgramFlow::run(Socket *mainSocket) {
                 sleep(1);
                 LINFO << "main thread: case7 - exit";
                 //deallocate memory and terminate the program
+                taxiCenter.terminate();
                 delete grid;
                 runLoop = false;
+
                 break;
             }
                 //case9: advance the time and do the suitable actions (assigning trips/moving)

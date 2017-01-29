@@ -1,6 +1,7 @@
 #include <string>
 #include "ProgramFlow.h"
 #include "Tcp.h"
+#include "easylogging++.h"
 
 _INITIALIZE_EASYLOGGINGPP
 

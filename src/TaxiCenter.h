@@ -21,9 +21,12 @@ private:
     map<int, string> mapOfCabStrings;
     map<int, Point> mapOfDriversLocations;
     BfsAlgorithm<Point> bfsInstance;
-    stack<Node<Point>> nextPointsOfPath;
     int timer;
     vector<map<int, Point>> listOfArrivedDrivers;
+    queue<Trip*> tripQueue;
+    bool stop = false;
+    pthread_t *threads;
+    pthread_mutex_t lock;
 public:
 
     TaxiCenter();
@@ -31,7 +34,7 @@ public:
     //constructor
     TaxiCenter(BfsAlgorithm<Point> &bfsInstance);
 
-    void bfsNavigate(Node<Point> startNode, Node<Point> endNode);
+    //void bfsNavigate(Node<Point> startNode, Node<Point> endNode);
 
     void addDriverLocation(int id, Point location);
 
@@ -40,7 +43,7 @@ public:
 
     void addCabString(int id, string cabString);
 
-    static void *runBfsThread(void *nodeOfPoints);
+    //static void *runBfsThread(void *nodeOfPoints);
     // allocate the trips that were received in the system to the appropriate drivers
     // and command each of them to drive to the end point of its trip
 
@@ -67,7 +70,7 @@ public:
 
     void deleteTrip(int i);
 
-    void bfsWrapper(Node<Point> startNode, Node<Point> endNode, TaxiCenter *taxiCenter);
+    //void bfsWrapper(Node<Point> startNode, Node<Point> endNode, TaxiCenter *taxiCenter);
 
     int getTimer();
 
@@ -79,7 +82,14 @@ public:
 
     void setTimer();
 
-    //destructor
+    void execute();
+
+    static void *runBfsThread(void *taxiCenterArg);
+
+    void terminate();
+
+    void threadPoolBfsCalc( int threadsNum);
+        //destructor
     ~TaxiCenter();
 };
 

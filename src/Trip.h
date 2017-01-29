@@ -38,8 +38,7 @@ public:
 
     Trip();
 
-    Trip(int rideId, Point startingPoint, Point endingPoint, int numOfPassengers, double taarif //);
-            , stack<Node<Point>> pathWithoutStartingPoint, int time);
+    Trip(int rideId, Point startingPoint, Point endingPoint, int numOfPassengers, double taarif , int time);
 
     int getRideId() const;
 
@@ -60,6 +59,8 @@ public:
     void removeNextPointOfPath();
 
     int getTime();
+
+    void setNextPointOfPath(stack<Node<Point>> nextPointsOfPathStack);
 
     ~Trip();
 };
