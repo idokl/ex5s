@@ -12,16 +12,17 @@ bool TaxiCenter::createTrip(InputParsing::parsedTripData parsedTripDataTrip) {
             throw exception();
         }
     }
-    this->bfsWrapper(startNode,endNode,this);
-    //if no path, return false
-    if (this->nextPointsOfPath == stack<Node<Point>>()) {
-        pathExists = false;
-        return pathExists;
-    }
-    this->nextPointsOfPath.pop();
+//    this->bfsWrapper(startNode,endNode,this);
+//    //if no path, return false
+//    if (this->nextPointsOfPath == stack<Node<Point>>()) {
+//        pathExists = false;
+//        return pathExists;
+//    }
+//    this->nextPointsOfPath.pop();
     Trip *trip = new Trip(parsedTripDataTrip.id, parsedTripDataTrip.start, parsedTripDataTrip.end,
                           parsedTripDataTrip.numberOfPassengers, parsedTripDataTrip.tariff,
                           parsedTripDataTrip.time);
+    this->listOfTrips.push_back(trip);
     this->tripQueue.push(trip);
 }
 
@@ -38,10 +39,7 @@ void TaxiCenter::addCab(Cab *cab) {
 }
 
 bool TaxiCenter::checkCabIdExistence(int id) {
-    if (mapOfCabStrings.find(id) == mapOfCabStrings.end()) {
-        return false;
-    }
-    return true;
+    return !(mapOfCabStrings.find(id) == mapOfCabStrings.end());
 }
 
 void TaxiCenter::addCabString(int id, string cabString) {
@@ -67,11 +65,6 @@ void TaxiCenter::addDriverLocation(int id, Point location) {
 
 }
 
-TaxiCenter::~TaxiCenter() {
-    for (unsigned int i = 0; i < listOfCabs.size(); i++) {
-        delete listOfCabs[i];
-    }
-}
 
 void TaxiCenter::deleteTrip(int i) {
     this->listOfTrips.erase(this->listOfTrips.begin() + i);
@@ -129,7 +122,7 @@ void TaxiCenter::execute() {
             Node<Point> nodeStart(trip->getStartingPoint());
             Node<Point> nodeEnd(trip->getEndingPoint());
             trip->setNextPointOfPath(this->bfsInstance.navigate(nodeStart,nodeEnd));
-            this->listOfTrips.push_back(trip);
+            trip->setIsReady();
         }
         else {
             pthread_mutex_unlock(&lock);

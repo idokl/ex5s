@@ -19,6 +19,7 @@ private:
     int numOfPassengers;
     double rateOfTrip; //tariff
     int time;
+    bool isReady;
 public:
 
     friend class boost::serialization::access;
@@ -34,6 +35,7 @@ public:
         ar & numOfPassengers;
         ar & rateOfTrip;
         ar & time;
+        ar & isReady;
     }
 
     Trip();
@@ -62,6 +64,10 @@ public:
 
     void setNextPointOfPath(stack<Node<Point>> nextPointsOfPathStack);
 
+    void setIsReady();
+    
+    bool getIsReady();
+    
     ~Trip();
 };
 

@@ -73,7 +73,8 @@ void *ProgramFlow::threadsRun(void *threadStruct) {
                             taxiCenter->getListOfTrips().at(i)->getStartingPoint();
                     if (((tripStartTime == currentTime)
                          && (currentDriverLocation == tripStartingPoint)) && (arrived)) {
-
+                        while(!taxiCenter->getListOfTrips().at(i)->getIsReady()){
+                        }
                         arrivedPoint = taxiCenter->getListOfTrips().at(i)->getEndingPoint();
                         arrived = false;
                         //option 10 (of driver): assign a trip to the driver
@@ -163,6 +164,7 @@ void ProgramFlow::run(Socket *mainSocket) {
     InputParsing::gridDimensions gd;
     int numOfObstacles;
     vector<Point> listOfObstacles;
+    vector<threadData *> vectorOfStructs = vector<threadData *>();
     while(true) {
         try {
             listOfObstacles = vector<Point>();
@@ -313,10 +315,6 @@ void ProgramFlow::run(Socket *mainSocket) {
                     LINFO << "main thread: the id of the driver isn't valid";
                     cout << "-1" << endl;
                 }
-                int id = stoi(inputString);
-                //get information about the driver location from the taxi center
-                Point location = taxiCenter.getDriverLocation(id);
-                cout << location << endl;
                 LINFO << "main thread: case4 end";
                 break;
             }
