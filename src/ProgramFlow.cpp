@@ -173,12 +173,6 @@ void ProgramFlow::run(Socket *mainSocket) {
             getline(cin, inputString);
             //throw exception if 'number of obstacles' is not nonNegative number
             inputParsing.expectToNonNegativeNumber(inputString);
-/*
-            if (inputString.find_first_not_of("0123456789") != std::string::npos) {
-                LINFO << "main thread: the input 'number of obstacles' that was recived is not a number";
-                throw exception();
-            }
-*/
             numOfObstacles = stoi(inputString);
             //if there are any obstacles, get their locations.
             if (numOfObstacles > 0) {
@@ -272,8 +266,8 @@ void ProgramFlow::run(Socket *mainSocket) {
                     }
                     bool tripWasCreated = taxiCenter.createTrip(trip);
                     if (tripWasCreated == false) {
-                        LINFO << "main thread: "
-                                "the trip wasn't created because there isn't available path";
+                        LINFO << "main thread: the trip wasn't created because there isn't "
+                                "available path";
                     }
                 } catch (std::exception& e) {
                     LINFO << "main thread: the trip data isn't valid";
@@ -290,7 +284,12 @@ void ProgramFlow::run(Socket *mainSocket) {
                 //corresponding driver afterwards.
                 getline(cin, inputString);
                 try {
-                    cabForDriver = CabFactory::createCab(inputString);
+                    InputParsing::parsedCabData cab = inputParsing.parseVehicleData(inputString);
+                    if (taxiCenter.checkCabIdExistence(cab.id)) {
+                        LINFO << "main thread: the cab id isn't unique";
+                        throw exception();
+                    }
+                    cabForDriver = CabFactory::createCab(cab);
                     taxiCenter.addCab(cabForDriver);
                     taxiCenter.addCabString(cabForDriver->getId(), inputString);
                 } catch (std::exception& e) {

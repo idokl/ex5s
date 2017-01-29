@@ -41,12 +41,13 @@ public:
     //add cab to the taxi center
     void addCab(Cab *cab);
 
+    bool checkCabIdExistence(int id);
+
     void addCabString(int id, string cabString);
 
     //static void *runBfsThread(void *nodeOfPoints);
     // allocate the trips that were received in the system to the appropriate drivers
     // and command each of them to drive to the end point of its trip
-
 
     //get list of the trips
     const vector<Trip *> &getListOfTrips() const;

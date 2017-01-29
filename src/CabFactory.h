@@ -10,7 +10,7 @@ using namespace std;
 
 class CabFactory {
 public:
-    static Cab *createCab(string inputString);
+    static Cab *createCab(InputParsing::parsedCabData cabData);
 };
 
 #endif //EX4_CABFACTORY_H

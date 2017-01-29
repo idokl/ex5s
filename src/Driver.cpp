@@ -103,6 +103,7 @@ void Driver::moveOneStep() {
 //communicate with the server (documentation is in Driver.h file)
 void Driver::run(Socket *socket) {
     char buffer[100000];
+    InputParsing inputParsing;
     stringstream ss;
     ss << this->id;
     //send our id to the server
@@ -111,7 +112,8 @@ void Driver::run(Socket *socket) {
     //recive information about the driver's cab and create it
     socket->reciveData(buffer, sizeof(buffer), 0);
     string cabDataString = string(buffer);
-    cabOfDriver = CabFactory::createCab(cabDataString);
+    InputParsing::parsedCabData cabData = inputParsing.parseVehicleData(cabDataString);
+    cabOfDriver = CabFactory::createCab(cabData);
     socket->sendData("thanks to Nevo", 0);
     memset(buffer, 0, sizeof(buffer));
     Trip *trip = NULL;

@@ -3,7 +3,22 @@
 
 TaxiCenter::TaxiCenter(BfsAlgorithm<Point> &bfsInstance) : bfsInstance(bfsInstance), timer(0) {}
 
-void TaxiCenter::createTrip(InputParsing::parsedTripData parsedTripDataTrip) {
+bool TaxiCenter::createTrip(InputParsing::parsedTripData parsedTripDataTrip) {
+    bool pathExists = true;
+    Node<Point> startNode(parsedTripDataTrip.start);
+    Node<Point> endNode(parsedTripDataTrip.end);
+    for (unsigned int i = 0; i < listOfTrips.size(); i++) {
+        if (parsedTripDataTrip.id == listOfTrips.at(i)->getRideId()) {
+            throw exception();
+        }
+    }
+    this->bfsWrapper(startNode,endNode,this);
+    //if no path, return false
+    if (this->nextPointsOfPath == stack<Node<Point>>()) {
+        pathExists = false;
+        return pathExists;
+    }
+    this->nextPointsOfPath.pop();
     Trip *trip = new Trip(parsedTripDataTrip.id, parsedTripDataTrip.start, parsedTripDataTrip.end,
                           parsedTripDataTrip.numberOfPassengers, parsedTripDataTrip.tariff,
                           parsedTripDataTrip.time);
@@ -20,6 +35,13 @@ void TaxiCenter::addTrip(Trip *trip) {
 
 void TaxiCenter::addCab(Cab *cab) {
     listOfCabs.push_back(cab);
+}
+
+bool TaxiCenter::checkCabIdExistence(int id) {
+    if (mapOfCabStrings.find(id) == mapOfCabStrings.end()) {
+        return false;
+    }
+    return true;
 }
 
 void TaxiCenter::addCabString(int id, string cabString) {
