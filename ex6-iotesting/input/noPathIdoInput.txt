@@ -1,0 +1,48 @@
+server input:
+5 5
+3
+1,0
+1,1
+0,2
+3
+0,1,H,R
+2
+0,0,0,2,2,1,20,1
+1
+1
+9
+9
+9
+9
+9
+2
+1,2,2,0,1,2,30,8
+9
+9
+9
+9
+9
+9
+4
+0
+7
+
+
+client input:
+0,30,M,1,0
+
+
+expected output:
+(0,0)
+
+
+grid:
+v v v v v
+v v v v v
+x v v v v
+v x v v v
+v x v v v
+
+v - passable
+x - not passable
+(the point (0,0) is in the lower-left corner)

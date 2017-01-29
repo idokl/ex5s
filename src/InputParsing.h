@@ -14,11 +14,11 @@ typedef enum {SINGLE, MARRIED, DIVORCED, WIDOWED} Status_Of_Marriage;
 
 class InputParsing {
 private:
-    Driver *driver;
     map<string, Status_Of_Marriage> mapOfLetterToStatus;
     map<int, Taxi_Type> mapOfNumberToTaxiType;
     map<string, Model_Of_Car> mapOfLetterToModel;
     map<string, Color_Of_Car> mapOfLetterToColor;
+    string digits;
 
     vector<string> splitStrings(string stringWithCommas, int numberOfSeparatedWords);
 
@@ -87,6 +87,18 @@ public:
     } parsedCabData;
 
     parsedCabData parseVehicleData(string vehicleData);
+
+    /*
+     * throw exception if the argument is string that doesn't represent NonNegative number.
+     * examples: the following strings will make the function throw exception:
+     * "2d"
+     * "-3"
+     * "4.2"
+     * every string that includes characters that are not 0 1 2 3 4 5 6 7 8 9
+     */
+    void expectToNonNegativeNumber(string stringThatShouldRepresentNonNegativeInt);
+
+    void expectToPositiveNumber(string stringThatShouldRepresentPositiveInteger);
 };
 
 

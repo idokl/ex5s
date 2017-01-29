@@ -57,7 +57,7 @@ public:
 
     //create a trip (according to the parameters that are given in the 'parsed trip data' struct)
     //and add the trip to the taxi center
-    void createTrip(InputParsing::parsedTripData);
+    bool createTrip(InputParsing::parsedTripData);
 
     //get cab that is belonging to the taxi center (according to the cab id).
     //(if no such cab in the system, throw "no cab found")

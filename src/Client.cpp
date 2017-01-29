@@ -14,8 +14,16 @@ int main(int argc, char *argv[]) {
         string inputString;
         //insert a driver in the following format: (id,age,status,exp erience,vehicle_id)
         //                                              - (int,int,char:{S,M,D,W},int,int)
-        getline(cin, inputString);
-        InputParsing::parsedDriverData driverData = inputParsing.parseDriverData(inputString);
+        InputParsing::parsedDriverData driverData;
+        while(true) {
+            try {
+                getline(cin, inputString);
+                driverData = inputParsing.parseDriverData(inputString);
+                break;
+            } catch (std::exception& e) {
+                LINFO << "client: the driver data isn't valid. we will try again to receive it";
+            }
+        }
         socket = new Tcp(0, port, argv[1]);
         socket->initialize();
         LINFO << "Client initialized";

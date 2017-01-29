@@ -1,4 +1,5 @@
 #include "ProgramFlow.h"
+#include "InputParsing.h"
 
 using namespace std;
 
@@ -146,28 +147,51 @@ void *ProgramFlow::threadsRun(void* threadStruct) {
 
 //(Documentation is in the ProgramFlow.h file)
 void ProgramFlow::run(Socket *mainSocket) {
-    char buffer[100000];
-    string inputString;
-    //get the grid dimensions
-    getline(cin, inputString);
-    InputParsing inputParsing = InputParsing();
-    InputParsing::gridDimensions gd = inputParsing.parseGridDimensions(inputString);
-    //get number of obstacles
-    getline(cin, inputString);
-    int numOfObstacles;
-    numOfObstacles = stoi(inputString);
-    vector<Point> listOfObstacles = vector<Point>();
     vector<pthread_t> pthreadVector = vector<pthread_t>();
     pthread_mutex_init(&listOfTripsMutex, 0);
     pthread_mutex_init(&driverLocationsMapMutex, 0);
     pthread_mutex_init(&circleFinishMutex, 0);
     pthread_mutex_init(&timerMutex, 0);
-    //if there are any obstacles, get their locations.
-    if (numOfObstacles > 0) {
-        for (int i = 0; i < numOfObstacles; i++) {
+
+    char buffer[100000];
+    string inputString;
+    InputParsing inputParsing = InputParsing();
+    InputParsing::gridDimensions gd;
+    int numOfObstacles;
+    vector<Point> listOfObstacles;
+    while(true) {
+        try {
+            listOfObstacles = vector<Point>();
+            //get the grid dimensions
             getline(cin, inputString);
-            Point p(inputParsing.parsePoint(inputString));
-            listOfObstacles.push_back(p);
+            gd = inputParsing.parseGridDimensions(inputString);
+            //get number of obstacles
+            getline(cin, inputString);
+            //throw exception if 'number of obstacles' is not nonNegative number
+            inputParsing.expectToNonNegativeNumber(inputString);
+/*
+            if (inputString.find_first_not_of("0123456789") != std::string::npos) {
+                LINFO << "main thread: the input 'number of obstacles' that was recived is not a number";
+                throw exception();
+            }
+*/
+            numOfObstacles = stoi(inputString);
+            //if there are any obstacles, get their locations.
+            if (numOfObstacles > 0) {
+                for (int i = 0; i < numOfObstacles; i++) {
+                    getline(cin, inputString);
+                    Point p(inputParsing.parsePoint(inputString));
+                    if (p.getX() >= gd.gridWidth || p.getY() >= gd.gridHeight) {
+                        throw exception();
+                    }
+                    listOfObstacles.push_back(p);
+                }
+            }
+            break;
+        } catch (std::exception& e) {
+            LINFO << "main thread: the map isn't valid. we will try again to receive sizes of map,"
+                    " number of obstacles and the obstacles points";
+            cout << "-1" << endl;
         }
     }
     //create the grid and the taxi center
@@ -202,9 +226,9 @@ void ProgramFlow::run(Socket *mainSocket) {
                         threadData * threadDataStruct = new struct threadData;
                         string driverIdString = string(buffer);
                         threadDataStruct->id = stoi(driverIdString);
+                        taxiCenter.addDriverLocation(threadDataStruct->id, Point());
                         //send taxi data
                         LINFO << "main thread: case1 before checking and sending cabString";
-
                         string dataOfCabOfDriver = taxiCenter.getCabString(threadDataStruct->id);
                         mainSocket->sendData(dataOfCabOfDriver, descriptor);
                         memset(buffer, 0, sizeof(buffer));
@@ -230,8 +254,25 @@ void ProgramFlow::run(Socket *mainSocket) {
                 LINFO << "main thread: case2 begin";
                 //create a trip (according to the given parameters) and add it to the taxi center
                 getline(cin, inputString);
-                InputParsing::parsedTripData trip = inputParsing.parseTripData(inputString);
-                taxiCenter.createTrip(trip);
+                try {
+                    InputParsing::parsedTripData trip = inputParsing.parseTripData(inputString);
+                    if ((trip.start.getX() > gd.gridWidth - 1)
+                        || (trip.start.getY() > gd.gridHeight - 1)
+                        || (trip.end.getX() > gd.gridWidth - 1)
+                        || (trip.end.getY() > gd.gridHeight - 1)) {
+                        LINFO << "main thread: the startPoint/endPoint of the trip are outside"
+                                " of the map (coordinates are too big)";
+                        throw exception();
+                    }
+                    bool tripWasCreated = taxiCenter.createTrip(trip);
+                    if (tripWasCreated == false) {
+                        LINFO << "main thread: "
+                                "the trip wasn't created because there isn't available path";
+                    }
+                } catch (std::exception& e) {
+                    LINFO << "main thread: the trip data isn't valid";
+                    cout << "-1" << endl;
+                }
                 LINFO << "main thread: case2 end";
                 break;
             }
@@ -242,9 +283,14 @@ void ProgramFlow::run(Socket *mainSocket) {
                 //save string of parameters in the taxi center in order to pass it to the
                 //corresponding driver afterwards.
                 getline(cin, inputString);
-                cabForDriver = CabFactory::createCab(inputString);
-                taxiCenter.addCab(cabForDriver);
-                taxiCenter.addCabString(cabForDriver->getId(), inputString);
+                try {
+                    cabForDriver = CabFactory::createCab(inputString);
+                    taxiCenter.addCab(cabForDriver);
+                    taxiCenter.addCabString(cabForDriver->getId(), inputString);
+                } catch (std::exception& e) {
+                    LINFO << "main thread: the cab data isn't valid";
+                    cout << "-1" << endl;
+                }
                 LINFO << "main thread: case3 end";
                 break;
             }
@@ -253,10 +299,15 @@ void ProgramFlow::run(Socket *mainSocket) {
                 LINFO << "main thread: case4 begin";
                 //query about the location of a specific driver
                 getline(cin, inputString);
-                int id = stoi(inputString);
-                //get information about the driver location from the taxi center
-                Point location = taxiCenter.getDriverLocation(id);
-                cout << location << endl ;
+                try {
+                   int id = stoi(inputString);
+                    //get information about the driver location from the taxi center
+                    Point location = taxiCenter.getDriverLocation(id);
+                    cout << location << endl ;
+                } catch (std::exception& e) {
+                    LINFO << "main thread: the id of the driver isn't valid";
+                    cout << "-1" << endl;
+                }
                 LINFO << "main thread: case4 end";
                 break;
             }
@@ -293,6 +344,8 @@ void ProgramFlow::run(Socket *mainSocket) {
                 break;
             }
             default:
+                LINFO << "main thread: invalid option";
+                cout << "-1" << endl;
                 break;
         }
     }

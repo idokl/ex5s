@@ -3,14 +3,22 @@
 
 TaxiCenter::TaxiCenter(BfsAlgorithm<Point> &bfsInstance) : bfsInstance(bfsInstance), timer(0) {}
 
-void TaxiCenter::createTrip(InputParsing::parsedTripData parsedTripDataTrip) {
+bool TaxiCenter::createTrip(InputParsing::parsedTripData parsedTripDataTrip) {
+    bool pathExists = true;
     Node<Point> startNode(parsedTripDataTrip.start);
     Node<Point> endNode(parsedTripDataTrip.end);
     this->bfsWrapper(startNode,endNode,this);
+    //if no path, return false
+    if (this->nextPointsOfPath == stack<Node<Point>>()) {
+        pathExists = false;
+        return pathExists;
+    }
     this->nextPointsOfPath.pop();
     Trip *trip = new Trip(parsedTripDataTrip.id, parsedTripDataTrip.start, parsedTripDataTrip.end,
                           parsedTripDataTrip.numberOfPassengers, parsedTripDataTrip.tariff, nextPointsOfPath, parsedTripDataTrip.time);
     listOfTrips.push_back(trip);
+    //if path exist and trip has been created, return true
+    return pathExists;
 }
 
 const vector<Trip *> &TaxiCenter::getListOfTrips() const {
@@ -101,7 +109,8 @@ void TaxiCenter::setTimer() {
 }
 
 Point TaxiCenter::getDriverLocation(int driverId) {
-    return this->mapOfDriversLocations[driverId];
+    //throw exception if driverId is not in the mapOfDriversLocations
+    return this->mapOfDriversLocations.at(driverId);
 }
 
 int TaxiCenter::getNumOfDrivers() {
