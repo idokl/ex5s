@@ -75,6 +75,11 @@ void *ProgramFlow::threadsRun(void *threadStruct) {
                          && (currentDriverLocation == tripStartingPoint)) && (arrived)) {
                         while(!taxiCenter->getListOfTrips().at(i)->getIsReady()){
                         }
+                        if (!taxiCenter->getListOfTrips().at(i)->isPassable()) {
+                            delete taxiCenter->getListOfTrips().at(i);
+                            taxiCenter->deleteTrip(i);
+                            continue;
+                        }
                         arrivedPoint = taxiCenter->getListOfTrips().at(i)->getEndingPoint();
                         arrived = false;
                         //option 10 (of driver): assign a trip to the driver
@@ -266,11 +271,7 @@ void ProgramFlow::run(Socket *mainSocket) {
                                 " of the map (coordinates are too big)";
                         throw exception();
                     }
-                    bool tripWasCreated = taxiCenter.createTrip(trip);
-                    if (tripWasCreated == false) {
-                        LINFO << "main thread: the trip wasn't created because there isn't "
-                                "available path";
-                    }
+                    taxiCenter.createTrip(trip);
                 } catch (std::exception& e) {
                     LINFO << "main thread: the trip data isn't valid";
                     cout << "-1" << endl;

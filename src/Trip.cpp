@@ -7,6 +7,7 @@ Trip::Trip(int rideId, Point startingPoint, Point endingPoint, int numOfPassenge
     rateOfTrip = taarif;
     passedMeters = 0;
     isReady = false;
+    isPassablePath = true;
 }
 
 int Trip::getRideId() const {
@@ -61,7 +62,9 @@ int Trip::getTime() {
 
 
 void Trip::setNextPointOfPath(stack<Node<Point>> nextPointsOfPathStack) {
-    nextPointsOfPathStack.pop();
+    if(!nextPointsOfPathStack.empty()) {
+        nextPointsOfPathStack.pop();
+    }
     while (! nextPointsOfPathStack.empty()) {
         Node<Point> n =  nextPointsOfPathStack.top();
         Point p = n.getValue();
@@ -76,6 +79,12 @@ void Trip::setIsReady() {
 
 bool Trip::getIsReady() {
     return this->isReady;
-};
+}
 
+bool Trip::isPassable() const {
+    return isPassablePath;
+}
 
+void Trip::setIsPassable() {
+    this->isPassablePath = false;
+}

@@ -20,6 +20,9 @@ private:
     double rateOfTrip; //tariff
     int time;
     bool isReady;
+    bool isPassablePath;
+
+
 public:
 
     friend class boost::serialization::access;
@@ -67,6 +70,10 @@ public:
     void setIsReady();
     
     bool getIsReady();
+
+    bool isPassable() const;
+
+    void setIsPassable();
     
     ~Trip();
 };

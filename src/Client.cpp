@@ -23,6 +23,8 @@ int main(int argc, char *argv[]) {
                 break;
             } catch (std::exception& e) {
                 LINFO << "client: the driver data isn't valid. we will try again to receive it";
+                delete socket;
+                return 0;
             }
         }
         socket = new Tcp(0, port, argv[1]);

@@ -3,8 +3,7 @@
 
 TaxiCenter::TaxiCenter(BfsAlgorithm<Point> &bfsInstance) : bfsInstance(bfsInstance), timer(0) {}
 
-bool TaxiCenter::createTrip(InputParsing::parsedTripData parsedTripDataTrip) {
-    bool pathExists = true;
+void TaxiCenter::createTrip(InputParsing::parsedTripData parsedTripDataTrip) {
     Node<Point> startNode(parsedTripDataTrip.start);
     Node<Point> endNode(parsedTripDataTrip.end);
     for (unsigned int i = 0; i < listOfTrips.size(); i++) {
@@ -122,7 +121,11 @@ void TaxiCenter::execute() {
             Node<Point> nodeStart(trip->getStartingPoint());
             Node<Point> nodeEnd(trip->getEndingPoint());
             trip->setNextPointOfPath(this->bfsInstance.navigate(nodeStart,nodeEnd));
+            if (trip->getPath().empty()) {
+                trip->setIsPassable();
+            }
             trip->setIsReady();
+
         }
         else {
             pthread_mutex_unlock(&lock);

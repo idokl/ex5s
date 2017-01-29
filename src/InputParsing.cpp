@@ -26,6 +26,11 @@ InputParsing::InputParsing() {
 }
 
 InputParsing::gridDimensions InputParsing::parseGridDimensions(string gridData) {
+    //find first char that isn't whitespace
+    std::size_t firstChar = gridData.find_first_not_of(" \t\f\v\n\r");
+    if (firstChar!=std::string::npos) {
+        gridData = gridData.substr(firstChar);
+    }
     InputParsing::gridDimensions dimensions;
     string::size_type spacePosition = gridData.find(" ");
     if (spacePosition == string::npos) {
@@ -102,6 +107,11 @@ InputParsing::parsedCabData InputParsing::parseVehicleData(string vehicleData) {
 }
 
 vector<string> InputParsing::splitStrings(string stringWithCommas, int numberOfSeparatedWords) {
+    //find first char that isn't whitespace
+    std::size_t firstChar = stringWithCommas.find_first_not_of(" \t\f\v\n\r");
+    if (firstChar!=std::string::npos) {
+        stringWithCommas = stringWithCommas.substr(firstChar);
+    }
     vector<string> separatedWords = vector<string>();
     for (int i = 1; i < numberOfSeparatedWords; i++) {
         string::size_type commaPosition = stringWithCommas.find(",");
