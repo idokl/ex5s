@@ -209,6 +209,13 @@ void ProgramFlow::run(Socket *mainSocket) {
     while (runLoop) {
         //get number of option and do the defined operation
         getline(cin, inputString);
+        try {
+            inputParsing.expectToPositiveNumber(inputString);
+        } catch (std::exception &e) {
+            LINFO << "main thread: the option number isn't valid";
+            cout << "-1" << endl;
+            continue;
+        }
         LINFO << inputString;
         switch (stoi(inputString)) {
             //case 1: accept connection with the clients and run new thread
@@ -217,6 +224,13 @@ void ProgramFlow::run(Socket *mainSocket) {
                 LINFO << "main thread: case1 begin";
                 //create a driver (according to the given parameters) and add it to the taxi center
                 getline(cin, inputString);
+                try {
+                    inputParsing.expectToPositiveNumber(inputString);
+                } catch (std::exception &e) {
+                    LINFO << "main thread: the number of drivers isn't valid";
+                    cout << "-1" << endl;
+                    continue;
+                }
                 expectedNumberOfDrivers = stoi(inputString);
                 if (expectedNumberOfDrivers == 0) {
                     break;
