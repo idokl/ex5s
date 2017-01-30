@@ -46,7 +46,7 @@ template<class T>
 stack<Node<T>> BfsAlgorithm<T>::navigate(Node<T> &start, Node<T> &end) {
     //initialization of variables:
     //stack for the shortest path (between the given nodes) that this function will return
-    stack <Node<T>> path = stack<Node<T>>();
+    stack<Node<T>> path = stack<Node<T>>();
     bool pathHasBeenFound = false;
     //queue that maintain nodes that are candidates to look for their neighbors
     //(in order to find access to new nodes)

@@ -73,7 +73,7 @@ void *ProgramFlow::threadsRun(void *threadStruct) {
                             taxiCenter->getListOfTrips().at(i)->getStartingPoint();
                     if (((tripStartTime == currentTime)
                          && (currentDriverLocation == tripStartingPoint)) && (arrived)) {
-                        while(!taxiCenter->getListOfTrips().at(i)->getIsReady()){
+                        while (!taxiCenter->getListOfTrips().at(i)->getIsReady()) {
                         }
                         if (!taxiCenter->getListOfTrips().at(i)->isPassable()) {
                             delete taxiCenter->getListOfTrips().at(i);
@@ -170,7 +170,7 @@ void ProgramFlow::run(Socket *mainSocket) {
     int numOfObstacles;
     vector<Point> listOfObstacles;
     vector<threadData *> vectorOfStructs = vector<threadData *>();
-    while(true) {
+    while (true) {
         try {
             listOfObstacles = vector<Point>();
             //get the grid dimensions
@@ -193,7 +193,7 @@ void ProgramFlow::run(Socket *mainSocket) {
                 }
             }
             break;
-        } catch (std::exception& e) {
+        } catch (std::exception &e) {
             LINFO << "main thread: the map isn't valid. we will try again to receive sizes of map,"
                     " number of obstacles and the obstacles points";
             cout << "-1" << endl;
@@ -272,7 +272,7 @@ void ProgramFlow::run(Socket *mainSocket) {
                         throw exception();
                     }
                     taxiCenter.createTrip(trip);
-                } catch (std::exception& e) {
+                } catch (std::exception &e) {
                     LINFO << "main thread: the trip data isn't valid";
                     cout << "-1" << endl;
                 }
@@ -295,7 +295,7 @@ void ProgramFlow::run(Socket *mainSocket) {
                     cabForDriver = CabFactory::createCab(cab);
                     taxiCenter.addCab(cabForDriver);
                     taxiCenter.addCabString(cabForDriver->getId(), inputString);
-                } catch (std::exception& e) {
+                } catch (std::exception &e) {
                     LINFO << "main thread: the cab data isn't valid";
                     cout << "-1" << endl;
                 }
@@ -308,11 +308,11 @@ void ProgramFlow::run(Socket *mainSocket) {
                 //query about the location of a specific driver
                 getline(cin, inputString);
                 try {
-                   int id = stoi(inputString);
+                    int id = stoi(inputString);
                     //get information about the driver location from the taxi center
                     Point location = taxiCenter.getDriverLocation(id);
-                    cout << location << endl ;
-                } catch (std::exception& e) {
+                    cout << location << endl;
+                } catch (std::exception &e) {
                     LINFO << "main thread: the id of the driver isn't valid";
                     cout << "-1" << endl;
                 }

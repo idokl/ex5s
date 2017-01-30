@@ -15,11 +15,8 @@ int main(int argc, char *argv[]) {
         // port: port id that the server has to wait to massages of clients.
         socket = new Tcp(1, port, "127.0.0.1");
         socket->initialize();
-        //pthread_t mainThread;
         LINFO << "server initialized";
         ProgramFlow programFlow;
-        //programFlow.run(socket);
-        //pthread_create(&mainThread,NULL,programFlow.run,socket);
         programFlow.run(socket);
     }
     delete socket;

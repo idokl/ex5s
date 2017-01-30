@@ -1,23 +1,14 @@
 #include "TaxiCenter.h"
 
 
-TaxiCenter::TaxiCenter(BfsAlgorithm<Point> &bfsInstance) : bfsInstance(bfsInstance), timer(0) {}
+TaxiCenter::TaxiCenter(BfsAlgorithm<Point> &bfsInstance) : bfsInstance(bfsInstance), timer(0), stop(false) {}
 
 void TaxiCenter::createTrip(InputParsing::parsedTripData parsedTripDataTrip) {
-    Node<Point> startNode(parsedTripDataTrip.start);
-    Node<Point> endNode(parsedTripDataTrip.end);
     for (unsigned int i = 0; i < listOfTrips.size(); i++) {
         if (parsedTripDataTrip.id == listOfTrips.at(i)->getRideId()) {
             throw exception();
         }
     }
-//    this->bfsWrapper(startNode,endNode,this);
-//    //if no path, return false
-//    if (this->nextPointsOfPath == stack<Node<Point>>()) {
-//        pathExists = false;
-//        return pathExists;
-//    }
-//    this->nextPointsOfPath.pop();
     Trip *trip = new Trip(parsedTripDataTrip.id, parsedTripDataTrip.start, parsedTripDataTrip.end,
                           parsedTripDataTrip.numberOfPassengers, parsedTripDataTrip.tariff,
                           parsedTripDataTrip.time);
@@ -115,19 +106,18 @@ void TaxiCenter::execute() {
     while (!stop) {
         pthread_mutex_lock(&lock);
         if (!tripQueue.empty()) {
-            Trip* trip = tripQueue.front();
+            Trip *trip = tripQueue.front();
             tripQueue.pop();
             pthread_mutex_unlock(&lock);
             Node<Point> nodeStart(trip->getStartingPoint());
             Node<Point> nodeEnd(trip->getEndingPoint());
-            trip->setNextPointOfPath(this->bfsInstance.navigate(nodeStart,nodeEnd));
+            trip->setNextPointOfPath(this->bfsInstance.navigate(nodeStart, nodeEnd));
             if (trip->getPath().empty()) {
                 trip->setIsPassable();
             }
             trip->setIsReady();
 
-        }
-        else {
+        } else {
             pthread_mutex_unlock(&lock);
             sleep(1);
         }
@@ -136,7 +126,7 @@ void TaxiCenter::execute() {
 }
 
 void *TaxiCenter::runBfsThread(void *taxiCenterArg) {
-    TaxiCenter *taxiCenter = (TaxiCenter*)taxiCenterArg;
+    TaxiCenter *taxiCenter = (TaxiCenter *) taxiCenterArg;
     taxiCenter->execute();
     return NULL;
 }
@@ -151,6 +141,10 @@ TaxiCenter::~TaxiCenter() {
     for (unsigned int i = 0; i < listOfCabs.size(); i++) {
         delete listOfCabs[i];
     }
-    delete threads;
+    //5 is magic number cause Yanay said there will be only 5 threads in threadPoll
+    for(int i=0; i< 5;i++){
+        pthread_join(this->threads[i], NULL);
+    }
+    delete[] this->threads;
     pthread_mutex_destroy(&lock);
 }

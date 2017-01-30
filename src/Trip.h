@@ -43,7 +43,8 @@ public:
 
     Trip();
 
-    Trip(int rideId, Point startingPoint, Point endingPoint, int numOfPassengers, double taarif , int time);
+    Trip(int rideId, Point startingPoint, Point endingPoint, int numOfPassengers, double taarif,
+         int time);
 
     int getRideId() const;
 
@@ -68,13 +69,13 @@ public:
     void setNextPointOfPath(stack<Node<Point>> nextPointsOfPathStack);
 
     void setIsReady();
-    
+
     bool getIsReady();
 
     bool isPassable() const;
 
     void setIsPassable();
-    
+
     ~Trip();
 };
 

@@ -1,6 +1,7 @@
 #include "Trip.h"
 
-Trip::Trip(int rideId, Point startingPoint, Point endingPoint, int numOfPassengers, double taarif, int time):
+Trip::Trip(int rideId, Point startingPoint, Point endingPoint, int numOfPassengers, double taarif,
+           int time) :
         rideId(rideId), startingPoint(startingPoint),
         endingPoint(endingPoint),
         numOfPassengers(numOfPassengers), time(time) {
@@ -62,11 +63,11 @@ int Trip::getTime() {
 
 
 void Trip::setNextPointOfPath(stack<Node<Point>> nextPointsOfPathStack) {
-    if(!nextPointsOfPathStack.empty()) {
+    if (!nextPointsOfPathStack.empty()) {
         nextPointsOfPathStack.pop();
     }
-    while (! nextPointsOfPathStack.empty()) {
-        Node<Point> n =  nextPointsOfPathStack.top();
+    while (!nextPointsOfPathStack.empty()) {
+        Node<Point> n = nextPointsOfPathStack.top();
         Point p = n.getValue();
         nextPointsOfPath.push_back(p);
         nextPointsOfPathStack.pop();
@@ -74,7 +75,7 @@ void Trip::setNextPointOfPath(stack<Node<Point>> nextPointsOfPathStack) {
 }
 
 void Trip::setIsReady() {
-        this->isReady = true;
+    this->isReady = true;
 }
 
 bool Trip::getIsReady() {

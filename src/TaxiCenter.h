@@ -24,7 +24,7 @@ private:
     int timer;
     vector<map<int, Point>> listOfArrivedDrivers;
     queue<Trip*> tripQueue;
-    bool stop = false;
+    bool stop;
     pthread_t *threads;
     pthread_mutex_t lock;
 public:
@@ -71,8 +71,6 @@ public:
 
     void deleteTrip(int i);
 
-    //void bfsWrapper(Node<Point> startNode, Node<Point> endNode, TaxiCenter *taxiCenter);
-
     int getTimer();
 
     int getNumOfDrivers();
@@ -90,7 +88,7 @@ public:
     void terminate();
 
     void threadPoolBfsCalc( int threadsNum);
-        //destructor
+
     ~TaxiCenter();
 };
 
